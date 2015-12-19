@@ -36,7 +36,7 @@ using namespace std;
 // generate graphs or not?
 #define GENERATE_GRAPHS 1
 // Shuffle method (0-> random shuffle, 1-> manual shoe)
-#define SHUFFLE 0
+#define SHUFFLE 1
 // Split to 3 or 4 hands
 #define NUM_SPLITS 4
 // Can resplit Aces? (0-> no, 1-> yes)
@@ -470,10 +470,10 @@ int main(int argc, char **argv) {
 // if you have defined P_FIXED_CARDS, here you can set player's 1st and 2nd cards
 #ifdef P_FIXED_CARDS
 			for (int k = 0; k < num_boxes; k++) {
-				P_cards[0][k] = 8;		//player's 1st card
+				P_cards[0][k] = 7;		//player's 1st card
 				P_cards_char[0][k] = stringconversion(P_cards[0][k]);
 				P_cards[0][k] = numericconversion(P_cards[0][k]);
-				P_cards[1][k] = 2;//player's 2nd card
+				P_cards[1][k] = 7;//player's 2nd card
 				P_cards_char[1][k] = stringconversion(P_cards[1][k]);
 				P_cards[1][k] = numericconversion(P_cards[1][k]);
 			}
@@ -1216,6 +1216,8 @@ int resolve_winner(int player_value, int house_value, double bet, long int box,
 		return 1;
 	} else if (player_status == "Surrender") {
 		score -= (bet * (1 - 0.01 * com_rate));
+		//printf("Score is %Lf\n",score);
+		//cout << "\nScore " << score;
 		loses++;
 		print_result = "<font color=\"red\"><b>Loss</b></font>";
 		return -1;
@@ -1308,7 +1310,7 @@ void html_print(long int i, long int box, ofstream & html) {
 			html << "<tr> <td>" << s3.str() << "</td> <td>" << s2.str()
 				<< "</td> <td>" << s.str() << "</td> <td>" << box + 1
 				<< "</td> <td>" << player_string[box] << "</td> <td>"
-				<< player_value[box] << "</td> <td>" << fixed << score
+				<< player_value[box] << "</td> <td>"<< fixed << score
 				<< "</td> <td>" << player_status[box] << "</td> <td>"
 				<< print_result << "</td></tr>\n";
 		}
@@ -1360,25 +1362,26 @@ void html_print(long int i, long int box, ofstream & html) {
 }
 
 void html_files_init() {
-	remove("BJgame.html");
-	remove("WLdata.xml");
-	remove("linedata.xml");
-	remove("overall.html");
-	remove("shoe_overall.html");
-	remove("trip_overall.html");
-	remove("win_lose_streak.html");
-
-	html.open("BJgame.html");
-	xml.open("linedata.xml");
+	remove("output/BJgame.html");
+	remove("tmp/WLdata.xml");
+	remove("tmp/linedata.xml");
+	remove("output/overall.html");
+	remove("output/shoe_overall.html");
+	remove("output/trip_overall.html");
+	remove("output/win_lose_streak.html");
+	
+	html.open("output/BJgame.html");
+	//html.precision(0);
+	xml.open("tmp/linedata.xml");
 	if (shuffle == 1){
-		shoe_html.open("shoe_overall.html");
+		shoe_html.open("output/shoe_overall.html");
 	}
-	trip_html.open("trip_overall.html");
-	overall_stats.open("overall.html");
-	WL_streak.open("win_lose_streak.html");
-	WLdata.open("WLdata.xml");
+	trip_html.open("output/trip_overall.html");
+	overall_stats.open("output/overall.html");
+	WL_streak.open("output/win_lose_streak.html");
+	WLdata.open("tmp/WLdata.xml");
 
-	trip_html.precision(0);
+	trip_html.precision(2);
 	trip_html << "<!DOCTYPE html><html><head><style>table, th, td"
 			<< " { border: 1px solid black; border-collapse: collapse;"
 			<< "text-align:center }\n caption {font-weight:bold;\n font-size:1.1em;\n}</style> </head><body>\n"
@@ -1389,7 +1392,7 @@ void html_files_init() {
 			<< "<th>Balance</th> <th>Overall Balance</th> <th>Shoe Win</th><th>Shoe Tie</th> <th>Shoe Lose</th></tr>\n";
 
 	if (shuffle == 1){
-		shoe_html.precision(0);
+		shoe_html.precision(2);
 		shoe_html << "<!DOCTYPE html><html><head><style>table, th, td"
 				<< " { border: 1px solid black; border-collapse: collapse;"
 				<< "text-align:center }\n caption {font-weight:bold;\n font-size:1.1em;\n}</style> </head><body>\n"
@@ -1399,7 +1402,7 @@ void html_files_init() {
 				<< " <th>Lose</th> <th>Balance</th></tr>\n";
 	}
 
-	xml.precision(0);
+	xml.precision(2);
 	xml << "<?xml version=\"1.0\"?>\n <JSChart> <optionset> \n"
 			<< "<option set=\"setLineColor\" value=\"'#8D9386'\"/>\n"
 			<< "<option set=\"setLineWidth\" value=\"3\"/>\n"
@@ -1416,7 +1419,7 @@ void html_files_init() {
 			<< "<option set=\"setSize\" value=\"1000,400\"/>\n"
 			<< "</optionset> <dataset type=\"line\">\n";
 
-	html.precision(0);
+	html.precision(2);
 	html << "<!DOCTYPE html><html><head><style>table, th, td"
 			<< " { border: 1px solid black; border-collapse: collapse;"
 			<< "text-align:center } </style> </head><body>\n"
@@ -1425,7 +1428,7 @@ void html_files_init() {
 			<< " <th>Player Cards</th> <th>Player Total</th> <th>Player Balance</th>"
 			<< " <th>Player Status</th> <th>Game Result</th></tr>\n";
 
-	overall_stats.precision(0);
+	overall_stats.precision(2);
 	overall_stats << "<!DOCTYPE html><html><head><style>table, th, td"
 			<< " { border: 1px solid black; border-collapse: collapse;"
 			<< "text-align:center } </style> <script type=\"text/javascript\""

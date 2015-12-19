@@ -1,19 +1,19 @@
 <!DOCTYPE html><html><head><style>table, th, td { border: 1px solid black; border-collapse: collapse;text-align:center } </style> <script type="text/javascript" src="https://www.google.com/jsapi"></script><script type="text/javascript" src="jscharts.js"> </script> </head><body>
 <table style="width:100%">
 <tr> <th>Total Hands</th><th>Total Wins</th><th>Total Ties</th> <th>Total Defeats</th> <th>Total Balance</th> </tr>
-<tr> <td>1000</td><td>438</td><td>104</td><td>458</td><td>673</td></tr><tr> <th>Double Hands</th><th>Double Wins</th><th>Double Ties</th> <th>Double Defeats</th> <th>Double Balance</th> </tr>
-<tr> <td>277</td><td>153</td><td>19</td><td>105</td><td>1962</td></tr><tr> <th>Split Hands</th><th>Split Wins</th><th>Split Ties</th> <th>Split Defeats</th> <th>Split Balance</th> </tr>
-<tr> <td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr></table>
-<p><b>Total Player Busts:	</b>141 ( 14.10% )</p><p><b>Total House Busts:	</b>260 ( 26.00% )</p><p><b>Total 777 wins:	</b>0</p><p><b>Total Pushes with Player 21 vs House BJ:	</b>0</p><div id="piechart" style="width: 900px; height: 500px;"></div>
+<tr> <td>2248</td><td>991</td><td>172</td><td>1085</td><td>8890.75</td></tr><tr> <th>Double Hands</th><th>Double Wins</th><th>Double Ties</th> <th>Double Defeats</th> <th>Double Balance</th> </tr>
+<tr> <td>211</td><td>128</td><td>8</td><td>75</td><td>10675.00</td></tr><tr> <th>Split Hands</th><th>Split Wins</th><th>Split Ties</th> <th>Split Defeats</th> <th>Split Balance</th> </tr>
+<tr> <td>105</td><td>62</td><td>8</td><td>35</td><td>3120.50</td></tr></table>
+<p><b>Total Player Busts:	</b>266 ( 11.83% )</p><p><b>Total House Busts:	</b>542 ( 24.74% )</p><p><b>Total 777 wins:	</b>0</p><p><b>Total Pushes with Player 21 vs House BJ:	</b>0</p><div id="piechart" style="width: 900px; height: 500px;"></div>
 <div id="linechart" style="width: 900px; height: 500px;"></div>
 <script type="text/javascript">
  google.load("visualization", "1", {packages:["corechart"]});
 google.setOnLoadCallback(drawChart);
 function drawChart() {
 var data = google.visualization.arrayToDataTable([
-['Task', 'Hours per Day'],['Wins',438     ],
-['Defeats',  458],['Ties',  104]]);
-var options = { title: 'Total results after 1000 hands'};
+['Task', 'Hours per Day'],['Wins',991     ],
+['Defeats',  1085],['Ties',  172]]);
+var options = { title: 'Total results after 2248 hands'};
 var chart = new google.visualization.PieChart(document.getElementById('piechart'));
 chart.draw(data, options);} 
 </script>
