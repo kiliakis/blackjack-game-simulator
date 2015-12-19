@@ -11,7 +11,7 @@ In order to produce the executable file, named `blackjack` you have to type:
 ```bash
 make
 ```
-into source code's home directory.
+into blackjack-game-simulator/ directory.
 
 ### How to use
 Just run:
@@ -21,10 +21,10 @@ Just run:
 for usage information.
 
 ### Output
-After you run your simulation, several files will be generated:
+After you run your simulation, several files will be generated under output directory:
 * BJgame.html: Detailed output of the simulation
 * overall.hmtl: Overall simulation statistics as well as a pie graph about Wins/ Defeats/ Ties and a line graph about players balance.
 * trip_overall.html: Overall statistics about every simulated trip.
 * shoe_overall.html: Overall statistics about every simulated shoe.
 * win_lose_streak.html: Bar graph showing player's win/lose streak.
-* WLdata.xml, linedata.xml: These files hold information needed for the generation of graphs.
+* WLdata.xml, linedata.xml: These files can be found under tmp directory and hold information needed for the generation of graphs.
