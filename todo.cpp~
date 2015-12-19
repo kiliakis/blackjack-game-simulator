@@ -1,0 +1,57 @@
+done 1) Random shuffles or manual shoe (default random shuffle on 6 decks)
+done 2) Split to 3 or 4 hands (default 4 hands) 
+done 3) Can resplit aces (default can resplit)
+done 4) house soft 17 hit or stand (default hit)
+done 5) player 21 push with or lose to house BJ (default lose)
+done 6) player 777 win double or wait for house card (default wait for house card)
+done 7) For overall.html, could you add percentage for total player bust & total house bust?
+    eg 14.3 % & 23.6%
+done 8) For trip_allover.html, could you add one more column to the right of balance the accumulated balance?
+    The accumulated balance is the sum of balances. eg add up balance of trip 1,
+    trip 2, trip 3 at the right of balance of trip 3.
+done 9) And I need to add an option of surrender or no surrender to our other options.
+    For no surrender, the player have to hit.
+
+done 10) Double down on 9,10,11 or any 2 cards (default any 2 cards)
+    The basic strategy for double down on 9,10, 11 is
+   i) player 9 vs house 3,4,5,6
+  ii) player 10 vs house 2,3,4,5,6,7,8,9
+ iii) player 11 vs house 2,3,4,5,6,7,8,9
+   The basic strategy for double down on any 2 cards is
+     i) player 9 vs house 3,4,5,6
+    ii) player 10 vs house 2,3,4,5,6,7,8,9
+   iii) player 11 vs house 2,3,4,5,6,7,8,9
+   iv) player A2, A3 vs house 5,6
+    v) player A4, A5 vs house 4,5,6
+   vi) player A6, A7 vs house 3,4,5,6
+   
+done 11) Sorry to inform you that for 5,5 & 10,10, never split them.
+	For 5,5 it's double down against house 2,3,4,5,6,7,8,9
+	For 10,10 it's always stay.
+
+12) House BJ win all or win original bet of player (default win original bet)
+   This difference is reflected on basic strategy
+   For BJ win all, the double down & split strategy is
+i) player 11 vs house 10 is hit
+ii) player AA vs house A is hit
+   For BJ win original bet, the double down & split startegy is
+i) player 11 vs house 10 is double down
+ii) player AA vs house A is split
+
+13) Can player split one bet only? (default cannot split one bet only)
+
+
+http://wizardofodds.com/games/blackjack/appendix/5/
+
+Hi Kostis,
+This chart is for you to split player cards for having 2 bets in a box.
+One bet will be lesser & another one behind will be more.
+Eg one bet $25 & another bet $500.
+You will look at the player cards will pair (eg 22,44,99...etc)
+You will see 2 colours red & green.
+For those with green colour, both bets will be split.
+For those with red colour, split the $25 bet only. The $500 will not be splitted.
+Do you understand by now?
+Let me know if you have any doubts?
+Thanks & best regards,
+Yee

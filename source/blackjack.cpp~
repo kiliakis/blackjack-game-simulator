@@ -4,7 +4,6 @@
 
 using namespace std;
 
-/*
 // Functions declaration
 //void parse_args(int argc, char **argv); 
 void html_files_init(), generate_WLstreak();
@@ -24,7 +23,7 @@ int house_hit(int & house_value, string & house_status, string & house_string);
 int player_split(int & card01, int & card02, int & next_card,
 		string char_card01, string char_card02, string & char_next_card,
 		int & player_value, string & player_string, string & player_status);
-*/
+
 int main(int argc, char **argv) {
 
 	//vector<bool> vector;
