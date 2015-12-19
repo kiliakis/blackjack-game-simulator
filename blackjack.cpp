@@ -28,9 +28,9 @@ using namespace std;
 #define ROUNDS 100
 // number of shoes in a trip
 // only applicable when manual shoe is used
-#define SHOES 5
+#define SHOES 2
 // number of trips in a simulation
-#define TRIPS 10
+#define TRIPS 2
 // Detailed output or not?
 #define DETAILED_OUTPUT 1
 // generate graphs or not?
