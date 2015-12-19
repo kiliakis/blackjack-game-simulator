@@ -18,11 +18,11 @@ using namespace std;
 // number of decks in every shoe
 #define DECKS_NUM 8
 // player's betting unit
-#define WAGER 20
+#define WAGER 100
 // number of boxes in every round
 #define BOXES	1
 // rolling commission rate %
-#define COM_RATE 1
+#define COM_RATE 0.5
 // number of rounds in a trip
 // only applicable when random shuffle is used
 #define ROUNDS 100
@@ -53,7 +53,7 @@ using namespace std;
 #define DOUBLE_ANY 1
 
 // uncomment next line for fixed player's first two cards
- #define P_FIXED_CARDS
+// #define P_FIXED_CARDS
 // uncomment next line for fixed house first card
 // #define H_FIXED_CARDS
 // uncomment next line for a random slit game
@@ -74,9 +74,10 @@ static inline void loadbar(unsigned int x, unsigned int n, unsigned int w = 50)
     cout << "]\r" << flush;
 }
 
+double com_rate;
 
 int num_decks,  num_boxes, num_shoes, num_trips, 
-	detailed_out, generate_graphs, wager, com_rate,
+	detailed_out, generate_graphs, wager,
 	total_cards, num_rounds;
 
 int shuffle, num_splits, resplitA, soft17, push21, win777, surrender, double_any;
@@ -116,7 +117,8 @@ void parse_args(int argc, char **argv)
     com_rate = COM_RATE;
     detailed_out = DETAILED_OUTPUT;
     generate_graphs = GENERATE_GRAPHS;
-    while(1){
+    
+	while(1){
    	    int option_index = 0;
 	    static struct option long_options[] = {
 	    	{"help",	         	no_argument,       0,  0 },
@@ -468,7 +470,7 @@ int main(int argc, char **argv) {
 // if you have defined P_FIXED_CARDS, here you can set player's 1st and 2nd cards
 #ifdef P_FIXED_CARDS
 			for (int k = 0; k < num_boxes; k++) {
-				P_cards[0][k] = 7;		//player's 1st card
+				P_cards[0][k] = 8;		//player's 1st card
 				P_cards_char[0][k] = stringconversion(P_cards[0][k]);
 				P_cards[0][k] = numericconversion(P_cards[0][k]);
 				P_cards[1][k] = 2;//player's 2nd card
@@ -663,7 +665,10 @@ string check_player_1st_2_cards(int & P_1st_card, int & P_2nd_card,
 	}
 
 	if ((P_1st_card == 7 && P_2nd_card == 7) && (H_1st_card == 10)) {
-		status = "Hit";
+		if(win777 == 0 && surrender == 1) 
+			status = "Surrender";
+		else 
+			status = "Hit";
 		return status;
 	}
 
