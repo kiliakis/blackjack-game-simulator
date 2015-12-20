@@ -51,6 +51,9 @@ using namespace std;
 #define SURRENDER 1
 // Double down on 9,10,11 or any 2 cards? (0-> 9,10,11, 1-> any 2 cards)
 #define DOUBLE_ANY 1
+// House BJ win all bets or original only? (0-> original, 1-> all)
+#define BJWINALL 1
+
 
 // uncomment next line for fixed player's first two cards
 // #define P_FIXED_CARDS
@@ -80,7 +83,8 @@ int num_decks,  num_boxes, num_shoes, num_trips,
 	detailed_out, generate_graphs, wager,
 	total_cards, num_rounds;
 
-int shuffle, num_splits, resplitA, soft17, push21, win777, surrender, double_any;
+int shuffle, num_splits, resplitA, soft17, push21, win777, surrender, double_any, 
+	bjwinall;
 
 void parse_args(int argc, char **argv) 
 {
@@ -98,6 +102,7 @@ void parse_args(int argc, char **argv)
 		"  --win777 [0 or 1]			Player's 777 win double or wait for house card? 0-> wait, 1-> win (default: 0)\n" \
 		"  --surrender [0 or 1]			Can Player surrender? 0-> no, 1-> yes (default: 1)\n" \
 		"  --double [0 or 1]			Double on 9,10,11 or any 2 cards? 0-> 9,10,11, 1-> any (default: 1)\n" \
+		"  --bjwinall [0 or 1]			House BJ win all bets or original bet only? 0-> original 1-> all (default: 1)\n" \
 		"  --help                  		Show this help message\n"
     
     shuffle = SHUFFLE;
@@ -108,7 +113,8 @@ void parse_args(int argc, char **argv)
     win777 = WIN777;
     double_any = DOUBLE_ANY;
     surrender = SURRENDER;
-    num_rounds = ROUNDS;
+    bjwinall = BJWINALL;
+	num_rounds = ROUNDS;
     num_decks = DECKS_NUM;
     num_boxes = BOXES;
     num_trips = TRIPS;
@@ -130,6 +136,7 @@ void parse_args(int argc, char **argv)
    	        {"win777",  			required_argument, 0,  0 },
    	        {"surrender",  			required_argument, 0,  0 },
    	        {"double_any",  		required_argument, 0,  0 },
+   	        {"bjwinall",  			required_argument, 0,  0 },
 	        { 0 , 					0, 				   0,  0 }
 	    };
 	    //const char *optstring = "rn:dc:bx:tr:sh:wg:cr:";
@@ -216,7 +223,16 @@ void parse_args(int argc, char **argv)
                 			exit(1);
         				}
         				break;
-        			default:
+ 					case 9:
+        				bjwinall = atoi(optarg);
+        				if (!(bjwinall ==0 || bjwinall ==1))
+        				{
+        					printf("bjwinall argument must be 0 or 1\n");
+        					printf( USAGE, argv[0]);
+                			exit(1);
+        				}
+        				break;
+       			default:
         				break;
         		}
                 break;
@@ -239,6 +255,7 @@ void parse_args(int argc, char **argv)
     printf("Player's 777 win double or wait for house card? (0-> wait, 1-> win)\t= %d\n", win777);
     printf("Can Player surrender? (0-> no, 1-> yes)\t\t\t\t\t= %d\n", surrender);
     printf("Double down on 9,10,11 or any 2 cards? (0-> 9,10,11, 1-> any)\t\t= %d\n", double_any);
+    printf("House BJ win all bets or original bet only? (0-> original, 1-> all)\t= %d\n", bjwinall);
 
 
     // 6 decks for random shuffle machine
@@ -690,7 +707,10 @@ string check_player_1st_2_cards(int & P_1st_card, int & P_2nd_card,
 	}
 
 	if ((P_1st_card == 1 && P_2nd_card == 1) && H_1st_card == 1) {
-		status = "Hit";
+		if(split_on && bjwinall == 0)
+			status = "Split";
+		else
+			status = "Hit";
 		return status;
 	}
 
@@ -745,12 +765,22 @@ string check_player_1st_2_cards(int & P_1st_card, int & P_2nd_card,
 	}
 
 // Check for Double
+	
+	if (player_value == 11 && P_1st_card != 1 && P_2nd_card != 1 && H_1st_card !=1){
+		if(bjwinall == 0 || H_1st_card != 10)
+			status = "Double";
+		else
+			status = "Hit";
+		return status;
+	}
+	
+	/*
 	if ((player_value == 11) && (P_1st_card != 1 && P_2nd_card != 1)
 			&& (H_1st_card != 1 && H_1st_card != 10)) {
 		status = "Double";
 		return status;
 	}
-
+	*/
 	if ((player_value == 10) && (P_1st_card != 1 && P_2nd_card != 1)
 			&& (H_1st_card != 1 && H_1st_card != 10)) {
 		status = "Double";
@@ -1293,16 +1323,21 @@ void html_print(long int i, long int box, ofstream & html) {
 		res = resolve_winner(player_value[box], house_value, bet[box], box,
 				score, hands, loses, wins, ties, player_status[box],
 				player_string[box]);
-		if (res > 0) {
-			v.push_back(true);
-		} else if (res < 0) {
-			v.push_back(false);
-		}
+				
+		v.push_back(res > 0);
+		
 		if (player_status[box] == "Double") {
 			resolve_winner(player_value[box], house_value, bet[box], box,
 					dscore, dhands, dloses, dwins, dties, player_status[box],
 					player_string[box]);
 		}
+		// if you lose original bet, house has BJ, you doubled down but lost
+		// you have not splitted hands, you take half your bet back
+		if(bjwinall == 0 && house_status == "BJ" && res < 0 && player_status[box] == "Double"){
+			//score += wager; 
+			score += wager * (1 - 0.01 * com_rate);
+		}
+
 		if (player_string[box] == "777") {
 			player_string[box] = "<b>777</b>";
 		}
@@ -1329,10 +1364,16 @@ void html_print(long int i, long int box, ofstream & html) {
 			res = resolve_winner(P_value[box][j], house_value, bet[box], box,
 					score, hands, loses, wins, ties, P_status[box][j],
 					P_string[box][j]);
-			if (res > 0) {
-				v.push_back(true);
-			} else if (res < 0) {
-				v.push_back(false);
+			
+			v.push_back(res > 0);
+			// if you lose only original bet, house has BJ, you lost the round,
+			// and its not the first Split hand, you take back your money
+			if(bjwinall == 0 && house_status == "BJ" && res < 0){
+				if( j>0)
+					score += bet[box] * (1 - 0.01 * com_rate);
+				else if( j == 0 && P_status[box][j].find("Double") != string::npos )
+					//score += wager;
+					score += wager * (1 - 0.01 * com_rate);
 			}
 			resolve_winner(P_value[box][j], house_value, bet[box], box, sscore,
 					shands, sloses, swins, sties, P_status[box][j],
