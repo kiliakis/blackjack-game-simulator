@@ -25,7 +25,7 @@ using namespace std;
 #define COM_RATE 0.5
 // number of rounds in a trip
 // only applicable when random shuffle is used
-#define ROUNDS 100
+#define ROUNDS 1000
 // number of shoes in a trip
 // only applicable when manual shoe is used
 #define SHOES 2
@@ -58,7 +58,7 @@ using namespace std;
 // uncomment next line for fixed player's first two cards
 // #define P_FIXED_CARDS
 // uncomment next line for fixed house first card
-// #define H_FIXED_CARDS
+ #define H_FIXED_CARDS
 // uncomment next line for a random slit game
 // #define RANDOM_SPLIT
 // note that random split does not work with if
@@ -303,7 +303,7 @@ string 	char_P_1st_card, char_P_2nd_card, char_P_next_card, char_H_next_card,
 		char_card01, char_card02, char_next_card, player_status[10],
 		player_split_status, house_status,
 		player_value_status, player_string[10], player_split_string,
-		house_string, player_A_exist, house_A_exist, house_add_ten,
+		house_string, player_A_exist,
 		P_cards_char[2][10], P_status[10][4], P_string[10][4];
 
 char card_array[13];
@@ -498,7 +498,7 @@ int main(int argc, char **argv) {
 
 // if you have defined H_FIXED_CARDS, here you can set house 1st card
 #ifdef H_FIXED_CARDS
-			H_1st_card = 10;		//House 1st card
+			H_1st_card = 1;		//House 1st card
 			char_H_1st_card = stringconversion(H_1st_card);
 			H_1st_card = numericconversion(H_1st_card);
 #endif
@@ -1038,7 +1038,10 @@ int player_hit(int & P_1st_card, int & P_2nd_card, int & H_1st_card,
 
 int house_hit(int & house_value, string & house_status, string & house_string) {
 
-	int H = 0;
+	//int H = 0;
+	string house_add_ten = "No", house_A_exist = "No", 
+		   hand_type = "Hard";
+	
 	house_status = "No_BJ";
 	if (bjs == num_boxes) {
 		if (H_1st_card == 1 || H_1st_card == 10) {
@@ -1053,24 +1056,35 @@ int house_hit(int & house_value, string & house_status, string & house_string) {
 		}
 		return house_value;
 	} else {
-		house_next_card_loop: draw_card(H_next_card, char_H_next_card);
-		if (H_1st_card == 1 || H_next_card == 1)
-			house_A_exist = "Yes";
-
-		H++;				// use to check whether 2 cards only
-
-		house_string = house_string + char_H_next_card;
-		house_value = house_value + H_next_card;
-
-		if (((H_1st_card == 1 && H_next_card == 10)
-				|| (H_1st_card == 10 && H_next_card == 1)) && H == 1) {
+		if(H_1st_card == 1)
+			house_A_exist = "Yes";		
+		
+		draw_card(H_next_card, char_H_next_card);
+		
+		if ((H_1st_card == 1 && H_next_card == 10) 
+				|| (H_1st_card == 10 && H_next_card == 1)) {
 			house_status = "BJ";
 			house_BJ = house_BJ + 1;
 			house_value = 21;
-			house_A_exist = "No";
+			house_string = house_string + char_H_next_card;
 			return house_value;
 		}
-
+		
+		
+house_next_card_loop:
+		
+		house_string = house_string + char_H_next_card;
+		house_value = house_value + H_next_card;
+		
+		if (H_next_card == 1)
+			house_A_exist = "Yes";
+		/*
+		else if(H_next_card == 1 && house_A_exist == "Yes" && house_add_ten == "No"){
+			house_A_exist = "No";
+			house_value += 10;
+			//house_add_ten = "Yes";
+		}
+		*/
 		if (house_A_exist == "Yes" && house_value < 11.5) {
 			house_value = house_value + 10;
 			house_add_ten = "Yes";
@@ -1082,18 +1096,21 @@ int house_hit(int & house_value, string & house_status, string & house_string) {
 			house_A_exist = "No";
 			house_add_ten = "No";
 		}
-
-		if (house_value < 16.5)
-			goto house_next_card_loop;
+		
+		draw_card(H_next_card, char_H_next_card);
 
 		// house soft 17: hit if soft17==0, stand otherwise)
-		if(soft17==0 && house_A_exist=="Yes" && house_value == 17)
+		if (house_value < 16.5 || (soft17 == 0 && house_A_exist == "Yes" && 
+					house_add_ten == "Yes" && house_value == 17))
 			goto house_next_card_loop;
-
+		/*
+		if(soft17==0 && house_A_exist=="Yes" && house_add_ten=="Yes" && house_value == 17)
+			goto house_next_card_loop;
+		*/
 		if (house_value > 21)
 			house_busts++;
-		house_A_exist = "No";
-		house_add_ten = "No";
+		//house_A_exist = "No";
+		//house_add_ten = "No";
 		house_status = "No_BJ";
 		return house_value;
 	}
