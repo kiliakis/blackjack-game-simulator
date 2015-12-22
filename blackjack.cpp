@@ -1460,8 +1460,8 @@ void html_print(long int i, long int box, ofstream & html) {
 
 void html_files_init() {
 	remove("output/BJgame.html");
-	remove("tmp/WLdata.xml");
-	remove("tmp/linedata.xml");
+	remove("output/WLdata.xml");
+	remove("output/linedata.xml");
 	remove("output/overall.html");
 	remove("output/shoe_overall.html");
 	remove("output/trip_overall.html");
@@ -1469,14 +1469,14 @@ void html_files_init() {
 	
 	html.open("output/BJgame.html");
 	//html.precision(0);
-	xml.open("tmp/linedata.xml");
+	xml.open("output/linedata.xml");
 	if (shuffle == 1){
 		shoe_html.open("output/shoe_overall.html");
 	}
 	trip_html.open("output/trip_overall.html");
 	overall_stats.open("output/overall.html");
 	WL_streak.open("output/win_lose_streak.html");
-	WLdata.open("tmp/WLdata.xml");
+	WLdata.open("output/WLdata.xml");
 
 	trip_html.precision(2);
 	trip_html << "<!DOCTYPE html><html><head><style>table, th, td"
