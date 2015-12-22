@@ -22,7 +22,7 @@ using namespace std;
 // number of boxes in every round
 #define BOXES	1
 // rolling commission rate %
-#define COM_RATE 0.5
+#define COM_RATE 1
 // number of rounds in a trip
 // only applicable when random shuffle is used
 #define ROUNDS 1000
@@ -30,7 +30,7 @@ using namespace std;
 // only applicable when manual shoe is used
 #define SHOES 2
 // number of trips in a simulation
-#define TRIPS 2
+#define TRIPS 10
 // Detailed output or not?
 #define DETAILED_OUTPUT 1
 // generate graphs or not?
@@ -58,7 +58,7 @@ using namespace std;
 // uncomment next line for fixed player's first two cards
 // #define P_FIXED_CARDS
 // uncomment next line for fixed house first card
- #define H_FIXED_CARDS
+// #define H_FIXED_CARDS
 // uncomment next line for a random slit game
 // #define RANDOM_SPLIT
 // note that random split does not work with if
@@ -316,7 +316,7 @@ void html_files_close(long double hw,long double hl,
 void stand(), hit(), Double(), bj(), split(), surrender_f();
 void draw_card(int & a, string & b);
 int resolve_winner(int, int, double, long int, long double &, long int &,
-		long int &, long int &, long int &, string &, string &);
+		long int &, long int &, long int &, string &, string &, bool);
 void html_print(long int, long int, ofstream &);
 char stringconversion(int);
 int numericconversion(int);
@@ -487,10 +487,10 @@ int main(int argc, char **argv) {
 // if you have defined P_FIXED_CARDS, here you can set player's 1st and 2nd cards
 #ifdef P_FIXED_CARDS
 			for (int k = 0; k < num_boxes; k++) {
-				P_cards[0][k] = 7;		//player's 1st card
+				P_cards[0][k] = 1;		//player's 1st card
 				P_cards_char[0][k] = stringconversion(P_cards[0][k]);
 				P_cards[0][k] = numericconversion(P_cards[0][k]);
-				P_cards[1][k] = 7;//player's 2nd card
+				P_cards[1][k] = 1;//player's 2nd card
 				P_cards_char[1][k] = stringconversion(P_cards[1][k]);
 				P_cards[1][k] = numericconversion(P_cards[1][k]);
 			}
@@ -1254,7 +1254,7 @@ void split() {
 
 int resolve_winner(int player_value, int house_value, double bet, long int box,
 		long double & score, long int & hand, long int & loses, long int & wins,
-		long int & ties, string & player_status, string & player_string) {
+		long int & ties, string & player_status, string & player_string, bool first_hand) {
 	hand++;
 	if (player_string == "777" && win777 == 1) {
 		score += 2 * bet;
@@ -1262,44 +1262,79 @@ int resolve_winner(int player_value, int house_value, double bet, long int box,
 		print_result = "<font color=\"blue\"><b>Win</b></font>";
 		return 1;
 	} else if (player_status == "Surrender") {
-		score -= (bet * (1 - 0.01 * com_rate));
-		//printf("Score is %Lf\n",score);
-		//cout << "\nScore " << score;
-		loses++;
-		print_result = "<font color=\"red\"><b>Loss</b></font>";
-		return -1;
+		if(bjwinall == 0 && first_hand && house_status == "BJ"){
+			ties++;		
+			print_result = "<b>Push</b>";
+			houseBJ_P21_pushes++;
+			return 0;
+		}else{
+			score -= (bet * (1 - 0.01 * com_rate));
+			//printf("Score is %Lf\n",score);
+			//cout << "\nScore " << score;
+			loses++;
+			print_result = "<font color=\"red\"><b>Loss</b></font>";
+			return -1;
+		}
 	} else if (player_value > 21.5) {
-		score -= (bet * (1 - 0.01 * com_rate));
-		loses++;
-		print_result = "<font color=\"red\"><b>Loss</b></font>";
-		return -1;
+		if(bjwinall == 0 && !first_hand && house_status == "BJ"){
+			ties++;		
+			print_result = "<b>Push</b>";
+			houseBJ_P21_pushes++;
+			return 0;
+		}else{
+			score -= (bet * (1 - 0.01 * com_rate));
+			loses++;
+			print_result = "<font color=\"red\"><b>Loss</b></font>";
+			return -1;
+		}
 	} else if (house_value > 21.5) {
 		score += bet;
 		wins++;
 		print_result = "<font color=\"blue\"><b>Win</b></font>";
 		return 1;
-	} else if (house_value > player_value) {
-		score -= (bet * (1 - 0.01 * com_rate));
-		loses++;
-		print_result = "<font color=\"red\"><b>Loss</b></font>";
-		return -1;
+	} else if (house_value > player_value) {	
+		if(bjwinall == 0 && !first_hand && house_status == "BJ"){
+			ties++;		
+			print_result = "<b>Push</b>";
+			houseBJ_P21_pushes++;
+			return 0;
+		}else{
+			score -= (bet * (1 - 0.01 * com_rate));
+			loses++;
+			print_result = "<font color=\"red\"><b>Loss</b></font>";
+			return -1;
+		}
 	} else if (house_value < player_value) {
 		score += bet;
 		wins++;
 		print_result = "<font color=\"blue\"><b>Win</b></font>";
 		return 1;
-	} else if (house_status == "BJ" && BJ[box] == false && player_value < 21) {
-		score -= (bet * (1 - 0.01 * com_rate));
-		loses++;
-		print_result = "<font color=\"red\"><b>Loss</b></font>";
-		return -1;
-	} else if (house_status == "BJ" && BJ[box] == false && player_value == 21) {
-		// player 21, house BJ
-		if(push21 == 0){ // lose
+	} else if (house_status == "BJ" && BJ[box] == false && player_value < 21) {	
+		if(bjwinall == 0 && !first_hand && house_status == "BJ"){
+			ties++;		
+			print_result = "<b>Push</b>";
+			houseBJ_P21_pushes++;
+			return 0;
+		}else{
 			score -= (bet * (1 - 0.01 * com_rate));
 			loses++;
 			print_result = "<font color=\"red\"><b>Loss</b></font>";
 			return -1;
+		}
+	} else if (house_status == "BJ" && BJ[box] == false && player_value == 21) {
+		// player 21, house BJ
+		if(push21 == 0){ // lose
+			if(bjwinall == 0 && !first_hand && house_status == "BJ"){
+				ties++;		
+				print_result = "<b>Push</b>";
+				houseBJ_P21_pushes++;
+				return 0;
+			}else{
+				score -= (bet * (1 - 0.01 * com_rate));
+				loses++;
+				print_result = "<font color=\"red\"><b>Loss</b></font>";
+				return -1;
+			}
 		}else{	//push
 			ties++;
 			houseBJ_P21_pushes++;
@@ -1325,6 +1360,7 @@ int resolve_winner(int player_value, int house_value, double bet, long int box,
 void html_print(long int i, long int box, ofstream & html) {
 	stringstream s, s2, s3;
 	int res;
+	bool first_hand = true;
 	if (box == 0) {
 		s << house_value;
 		s2 << house_string;
@@ -1339,22 +1375,23 @@ void html_print(long int i, long int box, ofstream & html) {
 
 		res = resolve_winner(player_value[box], house_value, bet[box], box,
 				score, hands, loses, wins, ties, player_status[box],
-				player_string[box]);
-				
+				player_string[box], first_hand);
+		first_hand = false;			
 		v.push_back(res > 0);
 		
 		if (player_status[box] == "Double") {
 			resolve_winner(player_value[box], house_value, bet[box], box,
 					dscore, dhands, dloses, dwins, dties, player_status[box],
-					player_string[box]);
+					player_string[box], first_hand);
 		}
 		// if you lose original bet, house has BJ, you doubled down but lost
 		// you have not splitted hands, you take half your bet back
+		
 		if(bjwinall == 0 && house_status == "BJ" && res < 0 && player_status[box] == "Double"){
 			//score += wager; 
 			score += wager * (1 - 0.01 * com_rate);
 		}
-
+		
 		if (player_string[box] == "777") {
 			player_string[box] = "<b>777</b>";
 		}
@@ -1374,27 +1411,29 @@ void html_print(long int i, long int box, ofstream & html) {
 				bet[box] = 2 * wager;
 				resolve_winner(P_value[box][j], house_value, bet[box], box,
 						dscore, dhands, dloses, dwins, dties, P_status[box][j],
-						P_string[box][j]);
+						P_string[box][j], false);
 			} else {
 				bet[box] = wager;
 			}
+			
 			res = resolve_winner(P_value[box][j], house_value, bet[box], box,
 					score, hands, loses, wins, ties, P_status[box][j],
-					P_string[box][j]);
+					P_string[box][j], first_hand);
 			
 			v.push_back(res > 0);
 			// if you lose only original bet, house has BJ, you lost the round,
 			// and its not the first Split hand, you take back your money
-			if(bjwinall == 0 && house_status == "BJ" && res < 0){
-				if( j>0)
-					score += bet[box] * (1 - 0.01 * com_rate);
-				else if( j == 0 && P_status[box][j].find("Double") != string::npos )
+			
+			if(bjwinall == 0 && house_status == "BJ" && res < 0 && first_hand &&
+					P_status[box][j].find("Double") != string::npos ){
 					//score += wager;
 					score += wager * (1 - 0.01 * com_rate);
 			}
+			
 			resolve_winner(P_value[box][j], house_value, bet[box], box, sscore,
 					shands, sloses, swins, sties, P_status[box][j],
-					P_string[box][j]);
+					P_string[box][j], first_hand);
+			first_hand = false;
 			if(detailed_out){
 				if (j == 0) {
 					html << "<tr> <td>" << s3.str() << "</td> <td>" << s2.str()
