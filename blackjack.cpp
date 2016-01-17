@@ -56,9 +56,9 @@ using namespace std;
 
 
 // uncomment next line for fixed player's first two cards
-// #define P_FIXED_CARDS
+ #define P_FIXED_CARDS
 // uncomment next line for fixed house first card
-// #define H_FIXED_CARDS
+ #define H_FIXED_CARDS
 // uncomment next line for a random slit game
 // #define RANDOM_SPLIT
 // note that random split does not work with if
@@ -361,7 +361,8 @@ int main(int argc, char **argv) {
 		long double trip_score = 0, trip_high_win = 0, trip_high_lose = 0;
 		shoes = 1;
 		used_cards = 0;
-		
+		 
+
 		random_shuffle(shoe, shoe + total_cards);
 		
 		draw_card(burn_card_num, burn_card_char);
@@ -487,18 +488,19 @@ int main(int argc, char **argv) {
 // if you have defined P_FIXED_CARDS, here you can set player's 1st and 2nd cards
 #ifdef P_FIXED_CARDS
 			for (int k = 0; k < num_boxes; k++) {
-				P_cards[0][k] = 1;		//player's 1st card
+				P_cards[0][k] = 5;		//player's 1st card
 				P_cards_char[0][k] = stringconversion(P_cards[0][k]);
 				P_cards[0][k] = numericconversion(P_cards[0][k]);
-				P_cards[1][k] = 1;//player's 2nd card
+				P_cards[1][k] = 6;//player's 2nd card
 				P_cards_char[1][k] = stringconversion(P_cards[1][k]);
 				P_cards[1][k] = numericconversion(P_cards[1][k]);
 			}
 #endif
 
+
 // if you have defined H_FIXED_CARDS, here you can set house 1st card
 #ifdef H_FIXED_CARDS
-			H_1st_card = 1;		//House 1st card
+			H_1st_card = 10;		//House 1st card
 			char_H_1st_card = stringconversion(H_1st_card);
 			H_1st_card = numericconversion(H_1st_card);
 #endif
@@ -627,7 +629,6 @@ int main(int argc, char **argv) {
 	cout << "\n";
 	return 0;
 }
-
 
 
 
