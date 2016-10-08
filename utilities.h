@@ -2,17 +2,27 @@
 #define UTILITIES_H_
 
 #include "blackjack.h"
+#include <iostream>
+#include <fstream>
+#include <cassert>
+#include <iomanip>
+#include <sstream>
+#include <string.h>
+#include <algorithm>
+#include <vector>
+#include <cstdio>
+#include <getopt.h>
 
 using namespace std;
 
 // remove this function from here, add a library
 // TODO added house_status, player_status[box], player_string[box],
 // player_value[box], wager, com_rate, bet[box]
-void html_print(BlackJack *bj, long int i, long int box, ofstream & html,
-                int player_value, string house_status,
-                string player_status, string player_string,
-                int wager, double com_rate, int &bet,
-                string *P_status, string *P_string, int *P_value)
+static inline void html_print(BlackJack *bj, long int i, long int box,
+                int player_value, string player_status, string player_string,
+                int house_value, string house_status, string house_string,
+                int &bet, string *P_status, string *P_string,
+                int *P_value, vector<bool> &v)
 {
 	stringstream s, s2, s3;
 	int res;
@@ -30,82 +40,87 @@ void html_print(BlackJack *bj, long int i, long int box, ofstream & html,
 
 	if (player_status != "Split") {
 
-		res = resolve_winner(player_value, house_value, bet, box,
-		                     score, hands, loses, wins, ties, player_status,
-		                     player_string, first_hand, print_result);
+		res = bj->resolve_winner(player_value, house_value, bet, box,
+		                         bj->score, bj->hands, bj->loses, bj->wins,
+		                         bj->ties, player_status, player_string,
+		                         house_status, first_hand, print_result);
 		first_hand = false;
 		v.push_back(res > 0);
 
 		if (player_status == "Double") {
-			resolve_winner(player_value, house_value, bet, box,
-			               dscore, dhands, dloses, dwins, dties, player_status,
-			               player_string, first_hand, print_result);
+			bj->resolve_winner(player_value, house_value, bet, box,
+			                   bj->dscore, bj->dhands, bj->dloses, bj->dwins,
+			                   bj->dties, player_status, player_string,
+			                   house_status, first_hand, print_result);
 		}
 		// if you lose original bet, house has BJ, you doubled down but lost
 		// you have not splitted hands, you take half your bet back
 
-		if (bjwinall == 0 && house_status == "BJ"
+		if (bj->bjwinall == 0 && house_status == "BJ"
 		        && res < 0 && player_status == "Double") {
 			//score += wager;
-			score += wager * (1 - 0.01 * com_rate);
+			bj->score += bj->wager * (1 - 0.01 * bj->com_rate);
 		}
 
 		if (player_string == "777") {
 			player_string = "<b>777</b>";
 		}
-		if (detailed_out) {
-			html << "<tr> <td>" << s3.str() << "</td> <td>" << s2.str()
-			     << "</td> <td>" << s.str() << "</td> <td>" << box + 1
-			     << "</td> <td>" << player_string << "</td> <td>"
-			     << player_value << "</td> <td>" << fixed << score
-			     << "</td> <td>" << player_status << "</td> <td>"
-			     << print_result << "</td></tr>\n";
+		if (bj->detailed_out) {
+			bj->html << "<tr> <td>" << s3.str() << "</td> <td>" << s2.str()
+			         << "</td> <td>" << s.str() << "</td> <td>" << box + 1
+			         << "</td> <td>" << player_string << "</td> <td>"
+			         << player_value << "</td> <td>" << fixed << bj->score
+			         << "</td> <td>" << player_status << "</td> <td>"
+			         << print_result << "</td></tr>\n";
 		}
 	} else if (player_status == "Split") {
 		// print 1st split hand
 		int j = 0;
-		while (j < num_splits && P_value[j] > 0) {
-			if (P_status[box][j].find("Double") != string::npos) {
-				bet[box] = 2 * wager;
-				resolve_winner(P_value[j], house_value, bet, box,
-				               dscore, dhands, dloses, dwins, dties, P_status[j],
-				               P_string[j], false, print_result);
+		while (j < bj->num_splits && P_value[j] > 0) {
+			if (P_status[j].find("Double") != string::npos) {
+				bet = 2 * bj->wager;
+				bj->resolve_winner(P_value[j], house_value, bet, box,
+				                   bj->dscore, bj->dhands, bj->dloses, bj->dwins,
+				                   bj->dties, P_status[j], P_string[j],
+				                   house_status, false, print_result);
 			} else {
-				bet = wager;
+				bet = bj->wager;
 			}
 
-			res = resolve_winner(P_value[j], house_value, bet, box,
-			                     score, hands, loses, wins, ties, P_status[j],
-			                     P_string[j], first_hand, print_result);
+			res = bj->resolve_winner(P_value[j], house_value, bet, box,
+			                         bj->score, bj->hands, bj->loses, bj->wins,
+			                         bj->ties, P_status[j], P_string[j],
+			                         house_status, first_hand, print_result);
 
-			v.push_back(res > 0);
+			bj->v.push_back(res > 0);
 			// if you lose only original bet, house has BJ, you lost the round,
 			// and its not the first Split hand, you take back your money
 
-			if (bjwinall == 0 && house_status == "BJ" && res < 0 && first_hand &&
+			if (bj->bjwinall == 0 && house_status == "BJ" && res < 0 && first_hand &&
 			        P_status[j].find("Double") != string::npos ) {
 				//score += wager;
-				score += wager * (1 - 0.01 * com_rate);
+				bj->score += bj->wager * (1 - 0.01 * bj->com_rate);
 			}
 
-			resolve_winner(P_value[j], house_value, bet, box, sscore,
-			               shands, sloses, swins, sties, P_status[j],
-			               P_string[j], first_hand, print_result);
+			bj->resolve_winner(P_value[j], house_value, bet, box, bj->sscore,
+			                   bj->shands, bj->sloses, bj->swins, bj->sties,
+			                   P_status[j], P_string[j], house_status,
+			                   first_hand, print_result);
 			first_hand = false;
-			if (detailed_out) {
+			if (bj->detailed_out) {
 				if (j == 0) {
-					html << "<tr> <td>" << s3.str() << "</td> <td>" << s2.str()
-					     << "</td> <td>" << s.str() << "</td> <td>";
+					bj->html << "<tr> <td>" << s3.str() << "</td> <td>" << s2.str()
+					         << "</td> <td>" << s.str() << "</td> <td>";
 				} else {
-					html << "<tr> <td></td> <td></td> <td></td> <td>";
+					bj->html << "<tr> <td></td> <td></td> <td></td> <td>";
 				}
 				if (P_string[j] == "777") {
 					P_string[j] = "<b>777</b>";
 				}
-				html << box + 1 << "</td> <td>" << P_string[j] << "</td> <td>"
-				     << P_value[j] << "</td> <td>" << fixed << score
-				     << "</td> <td>" << P_status[j] << "</td> <td>"
-				     << print_result << "</td></tr>\n";
+				bj->html << box + 1 << "</td> <td>" << P_string[j] << "</td> <td>"
+				         << P_value[j] << "</td> <td>" << fixed << bj->score
+				         << "</td> <td>" << P_status[j] << "</td> <td>"
+				         << print_result << "</td></tr>\n";
 			}
 			P_value[j] = 0;
 			j++;
@@ -117,7 +132,7 @@ void html_print(BlackJack *bj, long int i, long int box, ofstream & html,
 }
 
 
-void generate_WLstreak(ofstream &WL_streak, ofstream &WLdata) {
+static inline void generate_WLstreak(ofstream &WL_streak, ofstream &WLdata, vector<bool> v) {
 	//in v there is true-false depending on win/lose
 	//must create a new vector with wl streak values
 	// create data.xml and color data
@@ -195,10 +210,7 @@ void generate_WLstreak(ofstream &WL_streak, ofstream &WLdata) {
 }
 
 
-void html_files_init(BlackJack *bj/*ofstream &html, ofstream &xml,
-                     ofstream & shoe_html, ofstream &trip_html,
-                     ofstream & overall_stats, ofstream &WL_streak,
-                     ofstream & WLdata*/) {
+static inline void html_files_init(BlackJack *bj) {
 	remove("output/BJgame.html");
 	remove("output/WLdata.xml");
 	remove("output/linedata.xml");
@@ -207,147 +219,147 @@ void html_files_init(BlackJack *bj/*ofstream &html, ofstream &xml,
 	remove("output/trip_overall.html");
 	remove("output/win_lose_streak.html");
 
-	html.open("output/BJgame.html");
+	bj->html.open("output/BJgame.html");
 	//html.precision(0);
-	xml.open("output/linedata.xml");
-	if (shuffle == 1) {
-		shoe_html.open("output/shoe_overall.html");
+	bj->xml.open("output/linedata.xml");
+	if (bj->shuffle == 1) {
+		bj->shoe_html.open("output/shoe_overall.html");
 	}
-	trip_html.open("output/trip_overall.html");
-	overall_stats.open("output/overall.html");
-	WL_streak.open("output/win_lose_streak.html");
-	WLdata.open("output/WLdata.xml");
+	bj->trip_html.open("output/trip_overall.html");
+	bj->overall_stats.open("output/overall.html");
+	bj->WL_streak.open("output/win_lose_streak.html");
+	bj->WLdata.open("output/WLdata.xml");
 
-	trip_html.precision(2);
-	trip_html << "<!DOCTYPE html><html><head><style>table, th, td"
-	          << " { border: 1px solid black; border-collapse: collapse;"
-	          << "text-align:center }\n caption {font-weight:bold;\n font-size:1.1em;\n}</style> </head><body>\n"
-	          << "<table style=\"width:100%\">\n"
-	          << "<caption>Trip Information</caption>"
-	          << "<tr> <th>Trips</th> <th>Win</th> <th>Tie</th> "
-	          << " <th>Lose</th> <th>Highest Win</th> <th>Highest Lose</th>"
-	          << "<th>Balance</th> <th>Overall Balance</th> <th>Shoe Win</th><th>Shoe Tie</th> <th>Shoe Lose</th></tr>\n";
-
-	if (shuffle == 1) {
-		shoe_html.precision(2);
-		shoe_html << "<!DOCTYPE html><html><head><style>table, th, td"
-		          << " { border: 1px solid black; border-collapse: collapse;"
-		          << "text-align:center }\n caption {font-weight:bold;\n font-size:1.1em;\n}</style> </head><body>\n"
-		          << "<table style=\"width:100%\">\n"
-		          << "<caption>Shoe Information</caption>"
-		          << "<tr> <th>Shoe</th> <th>Win</th> <th>Tie</th> "
-		          << " <th>Lose</th> <th>Balance</th></tr>\n";
-	}
-
-	xml.precision(2);
-	xml << "<?xml version=\"1.0\"?>\n <JSChart> <optionset> \n"
-	    << "<option set=\"setLineColor\" value=\"'#8D9386'\"/>\n"
-	    << "<option set=\"setLineWidth\" value=\"3\"/>\n"
-	    << "<option set=\"setGridColor\" value=\"'#a4a4a4'\"/>\n"
-	    << "<option set=\"setGridOpacity\" value=\"0.8\"/>\n"
-	    << "<option set=\"setAxisNameX\" value=\"'Hand'\"/>\n"
-	    << "<option set=\"setAxisNameY\" value=\"''\"/>\n"
-	    << "<option set=\"setAxisValuesColor\" value=\"'#333639'\"/>\n"
-	    << "<option set=\"setAxisNameColor\" value=\"'#333639'\"/>\n"
-	    << "<option set=\"setAxisColor\" value=\"'#9F0505'\"/>\n"
-	    << "<option set=\"setTitle\" value=\"'Player Balance Graph'\"/>\n"
-	    << "<option set=\"setTitleColor\" value=\"'#7D7D7D'\"/>\n"
-	    << "<option set=\"setTitleFontSize\" value=\"16\"/>\n"
-	    << "<option set=\"setSize\" value=\"1000,400\"/>\n"
-	    << "</optionset> <dataset type=\"line\">\n";
-
-	html.precision(2);
-	html << "<!DOCTYPE html><html><head><style>table, th, td"
-	     << " { border: 1px solid black; border-collapse: collapse;"
-	     << "text-align:center } </style> </head><body>\n"
-	     << "<table style=\"width:100%\">\n"
-	     << "<tr> <th>Hand</th><th>House Cards</th> <th>House Total</th> <th>Box</th> "
-	     << " <th>Player Cards</th> <th>Player Total</th> <th>Player Balance</th>"
-	     << " <th>Player Status</th> <th>Game Result</th></tr>\n";
-
-	overall_stats.precision(2);
-	overall_stats << "<!DOCTYPE html><html><head><style>table, th, td"
+	bj->trip_html.precision(2);
+	bj->trip_html << "<!DOCTYPE html><html><head><style>table, th, td"
 	              << " { border: 1px solid black; border-collapse: collapse;"
-	              << "text-align:center } </style> <script type=\"text/javascript\""
-	              << " src=\"https://www.google.com/jsapi\"></script>"
-	              << "<script type=\"text/javascript\" src=\"jscharts.js\"> </script> </head><body>\n"
-	              << "<table style=\"width:100%\">\n";
+	              << "text-align:center }\n caption {font-weight:bold;\n font-size:1.1em;\n}</style> </head><body>\n"
+	              << "<table style=\"width:100%\">\n"
+	              << "<caption>Trip Information</caption>"
+	              << "<tr> <th>Trips</th> <th>Win</th> <th>Tie</th> "
+	              << " <th>Lose</th> <th>Highest Win</th> <th>Highest Lose</th>"
+	              << "<th>Balance</th> <th>Overall Balance</th> <th>Shoe Win</th><th>Shoe Tie</th> <th>Shoe Lose</th></tr>\n";
+
+	if (bj->shuffle == 1) {
+		bj->shoe_html.precision(2);
+		bj->shoe_html << "<!DOCTYPE html><html><head><style>table, th, td"
+		              << " { border: 1px solid black; border-collapse: collapse;"
+		              << "text-align:center }\n caption {font-weight:bold;\n font-size:1.1em;\n}</style> </head><body>\n"
+		              << "<table style=\"width:100%\">\n"
+		              << "<caption>Shoe Information</caption>"
+		              << "<tr> <th>Shoe</th> <th>Win</th> <th>Tie</th> "
+		              << " <th>Lose</th> <th>Balance</th></tr>\n";
+	}
+
+	bj->xml.precision(2);
+	bj->xml << "<?xml version=\"1.0\"?>\n <JSChart> <optionset> \n"
+	        << "<option set=\"setLineColor\" value=\"'#8D9386'\"/>\n"
+	        << "<option set=\"setLineWidth\" value=\"3\"/>\n"
+	        << "<option set=\"setGridColor\" value=\"'#a4a4a4'\"/>\n"
+	        << "<option set=\"setGridOpacity\" value=\"0.8\"/>\n"
+	        << "<option set=\"setAxisNameX\" value=\"'Hand'\"/>\n"
+	        << "<option set=\"setAxisNameY\" value=\"''\"/>\n"
+	        << "<option set=\"setAxisValuesColor\" value=\"'#333639'\"/>\n"
+	        << "<option set=\"setAxisNameColor\" value=\"'#333639'\"/>\n"
+	        << "<option set=\"setAxisColor\" value=\"'#9F0505'\"/>\n"
+	        << "<option set=\"setTitle\" value=\"'Player Balance Graph'\"/>\n"
+	        << "<option set=\"setTitleColor\" value=\"'#7D7D7D'\"/>\n"
+	        << "<option set=\"setTitleFontSize\" value=\"16\"/>\n"
+	        << "<option set=\"setSize\" value=\"1000,400\"/>\n"
+	        << "</optionset> <dataset type=\"line\">\n";
+
+	bj->html.precision(2);
+	bj->html << "<!DOCTYPE html><html><head><style>table, th, td"
+	         << " { border: 1px solid black; border-collapse: collapse;"
+	         << "text-align:center } </style> </head><body>\n"
+	         << "<table style=\"width:100%\">\n"
+	         << "<tr> <th>Hand</th><th>House Cards</th> <th>House Total</th> <th>Box</th> "
+	         << " <th>Player Cards</th> <th>Player Total</th> <th>Player Balance</th>"
+	         << " <th>Player Status</th> <th>Game Result</th></tr>\n";
+
+	bj->overall_stats.precision(2);
+	bj->overall_stats << "<!DOCTYPE html><html><head><style>table, th, td"
+	                  << " { border: 1px solid black; border-collapse: collapse;"
+	                  << "text-align:center } </style> <script type=\"text/javascript\""
+	                  << " src=\"https://www.google.com/jsapi\"></script>"
+	                  << "<script type=\"text/javascript\" src=\"jscharts.js\"> </script> </head><body>\n"
+	                  << "<table style=\"width:100%\">\n";
 
 }
 
 
-void html_files_close(BlackJack *bj, long double highest_win, long double highest_lose,
-                      long int total_shoes_won, long int total_shoes_tied, long int total_shoes_lost) {
-	trip_html << "<tr><td>Total</td><td>" << wins << "</td><td>" << ties
-	          << "</td><td>" << loses << "</td><td>" << fixed << highest_win
-	          << "</td><td>" << fixed << highest_lose << "</td> <td>" << score
-	          << "</td> <td>" << score
-	          << "</td><td>" << total_shoes_won << "</td><td>" << total_shoes_tied
-	          << "</td><td>" << total_shoes_lost << "</td> </tr>\n";
-	trip_html << "</table></body></html>\n";
-	trip_html.close();
+static inline void html_files_close(BlackJack *bj, long double highest_win, long double highest_lose)
+{
+	bj->trip_html << "<tr><td>Total</td><td>" << bj->wins << "</td><td>" << bj->ties
+	              << "</td><td>" << bj->loses << "</td><td>" << fixed << highest_win
+	              << "</td><td>" << fixed << highest_lose << "</td> <td>" << bj->score
+	              << "</td> <td>" << bj->score
+	              << "</td><td>" << bj->total_shoes_won << "</td><td>" << bj->total_shoes_tied
+	              << "</td><td>" << bj->total_shoes_lost << "</td> </tr>\n";
+	bj->trip_html << "</table></body></html>\n";
+	bj->trip_html.close();
 
-	if (shuffle == 1) {
-		shoe_html << "</table></body></html>\n";
-		shoe_html.close();
+	if (bj->shuffle == 1) {
+		bj->shoe_html << "</table></body></html>\n";
+		bj->shoe_html.close();
 	}
-	html << "</table></body></html>\n";
-	html.close();
-	xml << "</dataset></JSChart>\n";
-	xml.close();
+	bj->html << "</table></body></html>\n";
+	bj->html.close();
+	bj->xml << "</dataset></JSChart>\n";
+	bj->xml.close();
 
-	overall_stats << "<tr> <th>Total Hands</th><th>Total Wins</th><th>Total Ties</th>"
-	              << " <th>Total Defeats</th> <th>Total Balance</th> </tr>\n"
-	              << "<tr> <td>" << hands << "</td><td>" << wins << "</td><td>"
-	              << ties << "</td><td>" << loses << "</td><td>" << fixed << score
-	              << "</td></tr>"; //<< "</table><br>\n";
+	bj->overall_stats << "<tr> <th>Total Hands</th><th>Total Wins</th><th>Total Ties</th>"
+	                  << " <th>Total Defeats</th> <th>Total Balance</th> </tr>\n"
+	                  << "<tr> <td>" << bj->hands << "</td><td>" << bj->wins << "</td><td>"
+	                  << bj->ties << "</td><td>" << bj->loses << "</td><td>" << fixed << bj->score
+	                  << "</td></tr>"; //<< "</table><br>\n";
 	//overall_stats << "<table style=\"width:100%\">\n";
-	overall_stats << "<tr> <th>Double Hands</th><th>Double Wins</th><th>Double Ties</th>"
-	              << " <th>Double Defeats</th> <th>Double Balance</th> </tr>\n"
-	              << "<tr> <td>" << dhands << "</td><td>" << dwins << "</td><td>"
-	              << dties << "</td><td>" << dloses << "</td><td>" << fixed << dscore
-	              << "</td></tr>";	//<<"</table><br>\n";
+	bj->overall_stats << "<tr> <th>Double Hands</th><th>Double Wins</th><th>Double Ties</th>"
+	                  << " <th>Double Defeats</th> <th>Double Balance</th> </tr>\n"
+	                  << "<tr> <td>" << bj->dhands << "</td><td>" << bj->dwins << "</td><td>"
+	                  << bj->dties << "</td><td>" << bj->dloses << "</td><td>" << fixed << bj->dscore
+	                  << "</td></tr>";	//<<"</table><br>\n";
 	//overall_stats << "<table style=\"width:100%\">\n";
-	overall_stats << "<tr> <th>Split Hands</th><th>Split Wins</th><th>Split Ties</th>"
-	              << " <th>Split Defeats</th> <th>Split Balance</th> </tr>\n"
-	              << "<tr> <td>" << shands << "</td><td>" << swins << "</td><td>"
-	              << sties << "</td><td>" << sloses << "</td><td>" << fixed << sscore
-	              << "</td></tr></table>\n";
-	overall_stats << "<p><b>Total Player Busts:\t</b>" << player_busts
-	              << " ( " << fixed << setprecision(2) << player_busts * 100.0 / hands << "% )"
-	              << "</p><p><b>Total House Busts:\t</b>" << house_busts
-	              << " ( " << fixed << setprecision(2) << house_busts * 100.0 / total_i << "% )"
-	              << "</p><p><b>Total 777 wins:\t</b>" << triple7_wins << "</p>"
-	              << "<p><b>Total Pushes with Player 21 vs House BJ:\t</b>"
-	              << houseBJ_P21_pushes << "</p>";
-	overall_stats << "<div id=\"piechart\" style=\"width: 900px; height: 500px;\"></div>\n"
-	              << "<div id=\"linechart\" style=\"width: 900px; height: 500px;\"></div>\n"
-	              << "<script type=\"text/javascript\">\n"
-	              << " google.load(\"visualization\", \"1\", {packages:[\"corechart\"]});\n"
-	              << "google.setOnLoadCallback(drawChart);\n"
-	              << "function drawChart() {\n"
-	              << "var data = google.visualization.arrayToDataTable([\n"
-	              << "['Task', 'Hours per Day']," << "['Wins'," << wins << "     ],\n"
-	              << "['Defeats',  " << loses << "],['Ties',  " << ties << "]]);\n"
-	              << "var options = { title: 'Total results after " << hands
-	              << " hands'};\n"
-	              << "var chart = new google.visualization.PieChart(document.getElementById('piechart'));\n"
-	              << "chart.draw(data, options);} \n</script>\n";
-	if (generate_graphs) {
-		overall_stats << "<script type=\"text/javascript\">\n var myChart = new JSChart('linechart', 'line');"
-		              << "myChart.setDataXML(\"linedata.xml\"); myChart.draw();\n</script>";
+	bj->overall_stats << "<tr> <th>Split Hands</th><th>Split Wins</th><th>Split Ties</th>"
+	                  << " <th>Split Defeats</th> <th>Split Balance</th> </tr>\n"
+	                  << "<tr> <td>" << bj->shands << "</td><td>" << bj->swins << "</td><td>"
+	                  << bj->sties << "</td><td>" << bj->sloses << "</td><td>" << fixed << bj->sscore
+	                  << "</td></tr></table>\n";
+	bj->overall_stats << "<p><b>Total Player Busts:\t</b>" << bj->player_busts
+	                  << " ( " << fixed << setprecision(2) << bj->player_busts * 100.0 / bj->hands << "% )"
+	                  << "</p><p><b>Total House Busts:\t</b>" << bj->house_busts
+	                  << " ( " << fixed << setprecision(2) << bj->house_busts * 100.0 / bj->total_i << "% )"
+	                  << "</p><p><b>Total 777 wins:\t</b>" << bj->triple7_wins << "</p>"
+	                  << "<p><b>Total Pushes with Player 21 vs House BJ:\t</b>"
+	                  << bj->houseBJ_P21_pushes << "</p>";
+	bj->overall_stats << "<div id=\"piechart\" style=\"width: 900px; height: 500px;\"></div>\n"
+	                  << "<div id=\"linechart\" style=\"width: 900px; height: 500px;\"></div>\n"
+	                  << "<script type=\"text/javascript\">\n"
+	                  << " google.load(\"visualization\", \"1\", {packages:[\"corechart\"]});\n"
+	                  << "google.setOnLoadCallback(drawChart);\n"
+	                  << "function drawChart() {\n"
+	                  << "var data = google.visualization.arrayToDataTable([\n"
+	                  << "['Task', 'Hours per Day']," << "['Wins'," << bj->wins << "     ],\n"
+	                  << "['Defeats',  " << bj->loses << "],['Ties',  " << bj->ties << "]]);\n"
+	                  << "var options = { title: 'Total results after " << bj->hands
+	                  << " hands'};\n"
+	                  << "var chart = new google.visualization.PieChart(document.getElementById('piechart'));\n"
+	                  << "chart.draw(data, options);} \n</script>\n";
+	if (bj->generate_graphs) {
+		bj->overall_stats << "<script type=\"text/javascript\">\n var myChart = new JSChart('linechart', 'line');"
+		                  << "myChart.setDataXML(\"linedata.xml\"); myChart.draw();\n</script>";
 	}
 
-	overall_stats << "</body></html>\n";
-	overall_stats.close();
-	if (generate_graphs) {
-		generate_WLstreak();
+	bj->overall_stats << "</body></html>\n";
+	bj->overall_stats.close();
+	if (bj->generate_graphs) {
+		generate_WLstreak(bj->WLdata, bj->WL_streak, bj->v);
 	}
 
 }
 
 
-void parse_args(int argc, char **argv)
+static inline void parse_args(BlackJack &bj, int argc, char **argv)
 {
 	int c;
 	extern char *optarg;
@@ -366,7 +378,7 @@ void parse_args(int argc, char **argv)
 		"  --bjwinall [0 or 1]			House BJ win all bets or original bet only? 0-> original 1-> all (default: 1)\n" \
 		"  --help                  		Show this help message\n"
 
-	
+
 	while (1) {
 		int option_index = 0;
 		static struct option long_options[] = {
@@ -511,7 +523,7 @@ void parse_args(int argc, char **argv)
 }
 
 
-void loadbar(unsigned int x, unsigned int n, unsigned int w)
+static inline void loadbar(unsigned int x, unsigned int n, unsigned int w = 50)
 {
 	using namespace std;
 	if ( (x != n) && (x % (n / 100 + 1) != 0) ) return;

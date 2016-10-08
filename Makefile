@@ -7,10 +7,10 @@ EXECUTABLE=simulator
 
 all: $(EXECUTABLE)
 
-.cpp.o:
-	$(CC) $(CFLAGS) $< -o $@
+# .cpp.o:
+# 	$(CC) $(CFLAGS) $< -o $@
 
-$(EXECUTABLE): $(OBJECTS)
+$(EXECUTABLE): $(SOURCES)
 	$(CXX) $(LDFLAGS) $(CFLAGS) $^ -o $@
 
 

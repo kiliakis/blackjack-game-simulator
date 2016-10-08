@@ -68,7 +68,7 @@ const int BJWINALL = 1;
 // P_FIXED_CARDS is defined
 
 
-void loadbar(unsigned int x, unsigned int n, unsigned int w = 50);
+// void loadbar(unsigned int x, unsigned int n, unsigned int w = 50);
 
 using namespace std;
 
@@ -93,19 +93,27 @@ public:
 	int detailed_out = DETAILED_OUTPUT;
 	int generate_graphs = GENERATE_GRAPHS;
 
-	int used_cards, total_cards,
-	    triple7, bjs, num_boxes, house_BJ, house_busts, busts, surr,
+	int used_cards, total_cards, triple7, bjs,
+	    house_BJ, house_busts, busts, surr,
 	    hand, houseBJ_P21_pushes;
+
 	bool BJ_on, split_on;
 	long int wins = 0, loses = 0, ties = 0, hands = 0,
 	         dwins = 0, dloses = 0, dties = 0, dhands = 0,
 	         swins = 0, sloses = 0, sties = 0, shands = 0;
 
+	double score = 0.0, dscore = 0.0, sscore = 0.0;
+
 	long int trip_wins, trip_loses, trip_ties;
 	int shoes_won, shoes_lost, shoes_tied;
-	long double trip_score, trip_high_win, trip_high_lose;
+	double trip_score, trip_high_win, trip_high_lose;
 	long int total_shoes_won = 0, total_shoes_lost = 0, total_shoes_tied = 0;
-	long double highest_win = 0, highest_lose = 0;
+	double highest_win = 0, highest_lose = 0;
+
+	int player_busts;
+	int triple7_wins;
+
+	int total_i;
 
 	ofstream html;
 	ofstream xml;
@@ -117,7 +125,7 @@ public:
 
 	vector<int> shoe;
 
-// 	vector<bool> v;
+	vector<bool> v;
 
 // 	int P_1st_card, P_2nd_card, H_1st_card, P_next_card,
 // 	    card01, card02, next_card, H, player_value_hard, player_value[10],
@@ -134,7 +142,6 @@ public:
 // 	     shoes, trips, total_i = 0;
 
 // 	double bet[10];
-// 	long double score = 0.0, dscore = 0.0, sscore = 0.0;
 
 // 	string 	char_P_1st_card, char_P_2nd_card, char_P_next_card,
 // 	        char_H_1st_card,
@@ -146,17 +153,19 @@ public:
 
 // 	char card_array[13];
 
-
-
-	BlackJack();
+	BlackJack(int argc, char *argv[]);
 	~BlackJack() {};
-	void end_of_trip(long shoes_lost, long shoes_won, long shoes_tied,
-	                 long trip_loses, long trip_wins, long trip_ties,
-	                 double trip_score, double trip_high_win,
-	                 double trip_high_lose);
+	void end_of_trip(double &highest_win, double &highest_lose);
 	void start_of_trip();
+	void end_of_shoe(int &shoes, long &shoe_wins,
+	                 long &shoe_loses, long &shoe_ties,
+	                 double &shoe_score);
+	void end_of_hand(int i, int interval, double prev_score);
 	int calc_interval();
 	void burn_card();
+	void player_play_hand(int P_1st_card, int P_2nd_card, int H_1st_card,
+	                      string player_string[4], int player_value[4],
+	                      string player_status[4], int &bet);
 // Functions declaration
 	void html_files_init();
 	void generate_WLstreak();
@@ -164,18 +173,25 @@ public:
 	                      long int tsw, long int tst,
 	                      long int tsl);
 
-	void stand();
-	void hit();
-	void Double();
-	void bj();
-	void split();
+	void stand(int P_1st_card, int P_2nd_card, int &player_value);
+	void hit(int P_1st_card, int P_2nd_card,
+	         int H_1st_card, int &player_value,
+	         string &player_string);
+	void Double(int P_1st_card, int P_2nd_card,
+	            int &player_value, string &player_string);
+	void bj(bool *BJ, string &player_status);
+	void split(int P_1st_card, int P_2nd_card, string & char_P_1st_card,
+	           string & char_P_2nd_card, int num_splits,
+	           int *P_value, string *P_string, string *P_status);
 	void surrender_f();
 	void draw_card(int &a, string &b);
-	int resolve_winner(int, int, double, long int,
-	                   long double &, long int &,
-	                   long int &, long int &,
-	                   long int &, string &,
-	                   string &, bool);
+	int resolve_winner(int player_value, int house_value, double bet,
+	                   long int box, double & score,
+	                   long int & hand, long int & loses,
+	                   long int & wins, long int & ties,
+	                   string player_status, string player_string,
+	                   string house_status, bool first_hand,
+	                   string &print_result, bool BJ);
 	void html_print(long int, long int, ofstream &);
 	char stringconversion(int);
 	int numericconversion(int);
@@ -186,13 +202,11 @@ public:
 	               int & P_next_card, string & player_string);
 	int house_hit(int & house_value, string & house_status,
 	              string & house_string);
-	int player_split(int & card01, int & card02,
-	                 int & next_card, string char_card01,
+	int player_split(int card01, int card02,
+	                 string char_card01,
 	                 string char_card02,
-	                 string & char_next_card,
-	                 int & player_value,
-	                 string & player_string,
-	                 string & player_status);
+	                 string & player_split_string,
+	                 string & player_split_status);
 
 };
 
