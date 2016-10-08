@@ -1,10 +1,18 @@
 CXX = g++
-CFLAGS = -Wall -O3
-all: blackjack
+CFLAGS=-std=c++11 -O3 -Wall
+LDFLAGS=
+SOURCES=simulator.cpp blackjack.cpp
+OBJECTS=$(SOURCES:.cpp=.o)
+EXECUTABLE=simulator
 
-blackjack: blackjack.cpp
-	$(CXX) $(CFLAGS) $< -o $@
+all: $(EXECUTABLE)
+
+.cpp.o:
+	$(CC) $(CFLAGS) $< -o $@
+
+$(EXECUTABLE): $(OBJECTS)
+	$(CXX) $(LDFLAGS) $(CFLAGS) $^ -o $@
+
 
 clean:
-	rm *~ blackjack
-
+	rm *~ simulator
