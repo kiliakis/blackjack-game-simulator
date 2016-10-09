@@ -2,15 +2,12 @@
 #define UTILITIES_H_
 
 #include "blackjack.h"
+
 #include <iostream>
 #include <fstream>
-#include <cassert>
 #include <iomanip>
 #include <sstream>
-#include <string.h>
-#include <algorithm>
 #include <vector>
-#include <cstdio>
 #include <getopt.h>
 
 using namespace std;

@@ -1,5 +1,6 @@
 #include "blackjack.h"
 #include "utilities.h"
+
 #include <iostream>
 #include <fstream>
 #include <cassert>
@@ -103,9 +104,9 @@ void BlackJack::end_of_trip(double &highest_win, double &highest_lose,
 	}
 }
 
-void BlackJack::end_of_shoe(int &shoes, long &shoe_wins,
-                            long &shoe_loses, long &shoe_ties,
-                            double &shoe_score, long i)
+void BlackJack::end_of_shoe(int &shoes, int &shoe_wins,
+                            int &shoe_loses, int &shoe_ties,
+                            double &shoe_score, int i)
 {
 
 	if (shuffle == 1 && used_cards > 2 * total_cards / 3) {
@@ -174,46 +175,45 @@ void BlackJack::end_of_shoe(int &shoes, long &shoe_wins,
 
 
 void BlackJack::player_play_hand(int P_1st_card, int P_2nd_card,
-                                 int H_1st_card,
-                                 string P_string[4], int P_value[4],
-                                 string P_status[4], int &bet, bool& BJ)
+                                 int H_1st_card, string P_string[4],
+                                 int P_value[4], string P_status[4],
+                                 int &bet, bool& BJ)
 {
 	string char_P_1st_card = stringconversion(P_1st_card);
 	string char_P_2nd_card = stringconversion(P_2nd_card);
 	string char_H_1st_card = stringconversion(H_1st_card);
-	string player_string = char_P_1st_card + char_P_2nd_card;
+	P_string[0] = char_P_1st_card + char_P_2nd_card;
 	string house_string = char_H_1st_card;
-	int player_value = P_1st_card + P_2nd_card;
-	// int house_value = H_1st_card;
+	P_value[0] = P_1st_card + P_2nd_card;
 
-	string player_status = check_player_1st_2_cards(P_1st_card, P_2nd_card,
-	                       H_1st_card, player_value);
+	P_status[0] = check_player_1st_2_cards(P_1st_card, P_2nd_card,
+	                                       H_1st_card, P_value[0]);
 
-	if (player_status == "Stand") {
-		stand(P_1st_card, P_2nd_card, player_value);
+	if (P_status[0] == "Stand") {
+		stand(P_1st_card, P_2nd_card, P_value[0]);
 		bet = wager;
 	}
 
-	if (player_status == "Hit") {
+	if (P_status[0] == "Hit") {
 		hit(P_1st_card, P_2nd_card, H_1st_card,
-		    player_value, player_string);
+		    P_value[0], P_string[0]);
 		bet = wager;
 	}
 
-	if (player_status == "Double") {
-		Double(P_1st_card, P_2nd_card, player_value, player_string);
+	if (P_status[0] == "Double") {
+		Double(P_1st_card, P_2nd_card, P_value[0], P_string[0]);
 		bet = 2 * wager;
 	}
-	if (player_status == "BJ") {
-		bj(BJ, player_status);
+	if (P_status[0] == "BJ") {
+		bj(BJ, P_status[0]);
 		bet = 3 * wager / 2;
 	}
-	if (player_status == "Surrender") {
+	if (P_status[0] == "Surrender") {
 		surrender_f();
 		bet = wager / 2;
 	}
 
-	if (player_status == "Split") {
+	if (P_status[0] == "Split") {
 		split(P_1st_card, P_2nd_card, char_P_1st_card, char_P_2nd_card,
 		      P_value, P_string, P_status, H_1st_card);
 	}
@@ -221,11 +221,14 @@ void BlackJack::player_play_hand(int P_1st_card, int P_2nd_card,
 }
 
 void BlackJack::end_of_hand(int i, int interval, double prev_score,
-                            int player_value[10][4], string player_status[10][4],
-                            string player_string[10][4], int house_value,
+                            int P_value[10][4], string P_status[10][4],
+                            string P_string[10][4], int house_value,
                             string house_string, string house_status,
                             int *bet, bool *BJ)
 {
+	player_busts += busts;
+	triple7_wins += triple7;
+
 	// shuffle = 0 -> random shuffle
 	// -> shuffle at the end of every round
 	if (shuffle == 0) {
@@ -234,8 +237,8 @@ void BlackJack::end_of_hand(int i, int interval, double prev_score,
 	}
 
 	for (int k = 0; k < num_boxes; k++) {
-		html_print(this, i, k, player_value[k],
-		           player_string[k], player_status[k],
+		html_print(this, i, k, P_value[k],
+		           P_string[k], P_status[k],
 		           house_value, house_string, house_status,
 		           bet[k], BJ[k], v);
 	}
@@ -271,13 +274,6 @@ void BlackJack::draw_card(int & card, string & ch)
 	used_cards++;
 }
 
-// void BlackJack::draw_card(int & card, char & ch)
-// {
-// 	card = shoe[used_cards % total_cards];
-// 	ch = stringconversion(card);
-// 	card = numericconversion(card);
-// 	used_cards++;
-// }
 
 string BlackJack::stringconversion(int cardvalue) {
 	string card_array = "A23456789TJQK";
@@ -292,7 +288,7 @@ int BlackJack::numericconversion(int cardvalue) {
 }
 
 string BlackJack::check_player_1st_2_cards(int P_1st_card, int P_2nd_card,
-        int H_1st_card, int &player_value) {
+        int H_1st_card, int &P_value) {
 
 // check for BlackJack
 	string status;
@@ -302,7 +298,7 @@ string BlackJack::check_player_1st_2_cards(int P_1st_card, int P_2nd_card,
 			status = "BJ";
 		else
 			status = "21";
-		player_value = 21;
+		P_value = 21;
 		return status;
 	}
 
@@ -401,7 +397,7 @@ string BlackJack::check_player_1st_2_cards(int P_1st_card, int P_2nd_card,
 
 // Check for Double
 
-	if (player_value == 11 && P_1st_card != 1 && P_2nd_card != 1 && H_1st_card != 1) {
+	if (P_value == 11 && P_1st_card != 1 && P_2nd_card != 1 && H_1st_card != 1) {
 		if (bjwinall == 0 || H_1st_card != 10)
 			status = "Double";
 		else
@@ -409,20 +405,13 @@ string BlackJack::check_player_1st_2_cards(int P_1st_card, int P_2nd_card,
 		return status;
 	}
 
-	/*
-	if ((player_value == 11) && (P_1st_card != 1 && P_2nd_card != 1)
-			&& (H_1st_card != 1 && H_1st_card != 10)) {
-		status = "Double";
-		return status;
-	}
-	*/
-	if ((player_value == 10) && (P_1st_card != 1 && P_2nd_card != 1)
+	if ((P_value == 10) && (P_1st_card != 1 && P_2nd_card != 1)
 	        && (H_1st_card != 1 && H_1st_card != 10)) {
 		status = "Double";
 		return status;
 	}
 
-	if ((player_value == 9) && (P_1st_card != 1 && P_2nd_card != 1)
+	if ((P_value == 9) && (P_1st_card != 1 && P_2nd_card != 1)
 	        && (H_1st_card > 2.5 && H_1st_card < 6.5)) {
 		status = "Double";
 		return status;
@@ -507,32 +496,32 @@ string BlackJack::check_player_1st_2_cards(int P_1st_card, int P_2nd_card,
 	}
 
 // check for Hit or Stand
-	if (player_value > 16.5) {
+	if (P_value > 16.5) {
 		status = "Stand";
 		return status;
 	}
 
-	if (player_value == 13 || player_value == 14 || player_value == 15
-	        || player_value == 16) {
+	if (P_value == 13 || P_value == 14 || P_value == 15
+	        || P_value == 16) {
 		if (H_1st_card > 1.5 && H_1st_card < 6.5) {
 			status = "Stand";
 			return status;
 		}
 	}
 
-	if (player_value == 13 && (H_1st_card < 1.5 || H_1st_card > 6.5)) {
+	if (P_value == 13 && (H_1st_card < 1.5 || H_1st_card > 6.5)) {
 		status = "Hit";
 		return status;
 	}
 
-	if ((player_value == 14 || player_value == 15)
+	if ((P_value == 14 || P_value == 15)
 	        && (H_1st_card == 1 || H_1st_card == 7 || H_1st_card == 8
 	            || H_1st_card == 9)) {
 		status = "Hit";
 		return status;
 	}
 
-	if ((player_value == 14 || player_value == 15) && (H_1st_card == 10)) {
+	if ((P_value == 14 || P_value == 15) && (H_1st_card == 10)) {
 		if (surrender == 1) {
 			status = "Surrender";
 		} else {
@@ -541,13 +530,13 @@ string BlackJack::check_player_1st_2_cards(int P_1st_card, int P_2nd_card,
 		return status;
 	}
 
-	if ((player_value == 16)
+	if ((P_value == 16)
 	        && (H_1st_card == 1 || H_1st_card == 7 || H_1st_card == 8)) {
 		status = "Hit";
 		return status;
 	}
 
-	if ((player_value == 16) && (H_1st_card == 9 || H_1st_card == 10)) {
+	if ((P_value == 16) && (H_1st_card == 9 || H_1st_card == 10)) {
 		if (surrender == 1) {
 			status = "Surrender";
 		} else {
@@ -556,7 +545,7 @@ string BlackJack::check_player_1st_2_cards(int P_1st_card, int P_2nd_card,
 		return status;
 	}
 
-	if (player_value == 12) {
+	if (P_value == 12) {
 		if (H_1st_card > 3.5 && H_1st_card < 6.5) {
 			status = "Stand";
 			return status;
@@ -566,29 +555,29 @@ string BlackJack::check_player_1st_2_cards(int P_1st_card, int P_2nd_card,
 		}
 	}
 
-	if (player_value == 11 && (P_1st_card != 1 && P_2nd_card != 1)
+	if (P_value == 11 && (P_1st_card != 1 && P_2nd_card != 1)
 	        && (H_1st_card == 1 || H_1st_card == 10)) {
 		status = "Hit";
 		return status;
 	}
 
-	if (player_value == 10 && (P_1st_card != 1 && P_2nd_card != 1)
+	if (P_value == 10 && (P_1st_card != 1 && P_2nd_card != 1)
 	        && (H_1st_card == 1 || H_1st_card == 10)) {
 		status = "Hit";
 		return status;
 	}
 
-	if (player_value == 9 && (P_1st_card != 1 && P_2nd_card != 1)
+	if (P_value == 9 && (P_1st_card != 1 && P_2nd_card != 1)
 	        && (H_1st_card < 2.5 || H_1st_card > 6.5)) {
 		status = "Hit";
 		return status;
 	}
-	if (player_value == 8 && (P_1st_card != 1 && P_2nd_card != 1)) {
+	if (P_value == 8 && (P_1st_card != 1 && P_2nd_card != 1)) {
 		status = "Hit";
 		return status;
 	}
 
-	if (player_value < 7.5) {
+	if (P_value < 7.5) {
 		status = "Hit";
 		return status;
 	}
@@ -599,12 +588,12 @@ string BlackJack::check_player_1st_2_cards(int P_1st_card, int P_2nd_card,
 }
 
 int BlackJack::player_hit(int P_1st_card, int P_2nd_card, int H_1st_card,
-                          int & player_value, string & player_string)
+                          int & P_value, string & P_string)
 {
 	int p = 0;
-	player_string = "";
-	player_string += stringconversion(P_1st_card);
-	player_string += stringconversion(P_2nd_card);
+	P_string = "";
+	P_string += stringconversion(P_1st_card);
+	P_string += stringconversion(P_2nd_card);
 
 	string player_A_exist = "No";
 	string player_value_status = "";
@@ -624,55 +613,55 @@ player_next_card_loop:
 	if (P_1st_card == 1 || P_2nd_card == 1 || P_next_card == 1)
 		player_A_exist = "Yes";
 
-	player_string = player_string + char_P_next_card;
-	player_value = player_value + P_next_card;
+	P_string = P_string + char_P_next_card;
+	P_value = P_value + P_next_card;
 
 
 	if (player_A_exist == "Yes") {
-		if (player_value < 11.5) {
-			player_value_HS = player_value;
+		if (P_value < 11.5) {
+			player_value_HS = P_value;
 			player_value_status = "soft";
 		}
-		if (player_value > 11.5 && player_value < 21.5) {
-			player_value_HS = player_value + 10;
+		if (P_value > 11.5 && P_value < 21.5) {
+			player_value_HS = P_value + 10;
 			player_value_status = "hard";
 		}
-		if (player_value > 21.5) {
-			player_value_HS = player_value + 10;
+		if (P_value > 21.5) {
+			player_value_HS = P_value + 10;
 			player_value_status = "hard";
 		}
 	}
 
 	// player < 11.5 & not soft hand then hit
-	if (player_value < 11.5 && player_value_status != "soft")
+	if (P_value < 11.5 && player_value_status != "soft")
 		goto player_next_card_loop;
 
 	// 12 vs 2 & 3 hit
-	if ((H_1st_card == 2 || H_1st_card == 3) && (player_value == 12))
+	if ((H_1st_card == 2 || H_1st_card == 3) && (P_value == 12))
 		goto player_next_card_loop;
 
 	//player 12, 13, 14, 15 & 16 vs house 7, 8, 9, 10 & A
 	if (((H_1st_card > 6 && H_1st_card < 11) || H_1st_card == 1)
-	        && ((player_value > 11.5 && player_value < 16.5)
+	        && ((P_value > 11.5 && P_value < 16.5)
 	            || (player_value_HS > 11.5 && player_value_HS < 16.5)))
 		goto player_next_card_loop;
 
 	// soft A2, A3, A4, A5 & A6 hit
 	if (player_value_status == "soft"
-	        && ((player_value > 12.5 && player_value < 17.5)
+	        && ((P_value > 12.5 && P_value < 17.5)
 	            || (player_value_HS > 12.5 && player_value_HS < 17.5)))
 		goto player_next_card_loop;
 
 	// soft A7 hit if House 1st card is 9, 10 & A
 	if (player_value_status == "soft"
-	        && (player_value == 18 || player_value_HS == 18)
+	        && (P_value == 18 || player_value_HS == 18)
 	        && (H_1st_card == 9 || H_1st_card == 10 || H_1st_card == 1))
 		goto player_next_card_loop;
 
 	if (player_A_exist == "Yes")
-		player_value = player_value_HS;
+		P_value = player_value_HS;
 
-	return player_value;
+	return P_value;
 }
 
 
@@ -801,52 +790,52 @@ int BlackJack::player_split(int card01, int card02,
 	return player_split_value;
 }
 
-// NOTE call it with player_value[box]
-void BlackJack::stand(int P_1st_card, int P_2nd_card, int &player_value) {
+// NOTE call it with P_value[box]
+void BlackJack::stand(int P_1st_card, int P_2nd_card, int &P_value) {
 	if (P_1st_card == 1 || P_2nd_card == 1) {
-		player_value = player_value + 10;
+		P_value = P_value + 10;
 	}
 
 }
 
 // TODO fix the calls to this function
 void BlackJack::hit(int P_1st_card, int P_2nd_card,
-                    int H_1st_card, int &player_value,
-                    string &player_string)
+                    int H_1st_card, int &P_value,
+                    string &P_string)
 {
 
-	player_value = player_hit(P_1st_card, P_2nd_card, H_1st_card,
-	                          player_value, player_string);
+	P_value = player_hit(P_1st_card, P_2nd_card, H_1st_card,
+	                     P_value, P_string);
 
-	busts += player_value > 21;
+	busts += P_value > 21;
 
 }
 
 // TODO fix the calls to this function
 
 void BlackJack::Double(int P_1st_card, int P_2nd_card,
-                       int &player_value, string &player_string)
+                       int &P_value, string &P_string)
 {
 	int next_card;
 	string char_next_card;
-	player_value = P_1st_card + P_2nd_card;
+	P_value = P_1st_card + P_2nd_card;
 	draw_card(next_card, char_next_card);
-	player_value += next_card;
-	player_string += char_next_card;
+	P_value += next_card;
+	P_string += char_next_card;
 
 	if ((P_1st_card == 1 || P_2nd_card == 1 || next_card == 1)
-	        && player_value < 11.5)
-		player_value = player_value + 10;
+	        && P_value < 11.5)
+		P_value = P_value + 10;
 
-	busts += player_value > 21;
+	busts += P_value > 21;
 
 }
 
 // TODO fix the calls to this function
-void BlackJack::bj(bool &BJ, string &player_status) {
+void BlackJack::bj(bool &BJ, string &P_status) {
 	bjs++;
 	BJ = true;
-	player_status = "<font color=\"green\"><b>BJ</b></font>";
+	P_status = "<font color=\"green\"><b>BJ</b></font>";
 }
 
 void BlackJack::surrender_f() {
@@ -909,21 +898,21 @@ void BlackJack::split(int P_1st_card, int P_2nd_card,
 }
 
 // TODO house_status added
-int BlackJack::resolve_winner(int player_value, int house_value, double bet,
+int BlackJack::resolve_winner(int P_value, int house_value, double bet,
                               int box, double & score,
-                              long int & hand, long int & loses,
-                              long int & wins, long int & ties,
-                              string player_status, string player_string,
+                              int & hand, int & loses,
+                              int & wins, int & ties,
+                              string P_status, string P_string,
                               string house_status, bool first_hand,
                               string &print_result, bool BJ)
 {
 	hand++;
-	if (player_string == "777" && win777 == 1) {
+	if (P_string == "777" && win777 == 1) {
 		score += 2 * bet;
 		wins++;
 		print_result = "<font color=\"blue\"><b>Win</b></font>";
 		return 1;
-	} else if (player_status == "Surrender") {
+	} else if (P_status == "Surrender") {
 		if (bjwinall == 0 && first_hand && house_status == "BJ") {
 			ties++;
 			print_result = "<b>Push</b>";
@@ -935,7 +924,7 @@ int BlackJack::resolve_winner(int player_value, int house_value, double bet,
 			print_result = "<font color=\"red\"><b>Loss</b></font>";
 			return -1;
 		}
-	} else if (player_value > 21.5) {
+	} else if (P_value > 21.5) {
 		if (bjwinall == 0 && !first_hand && house_status == "BJ") {
 			ties++;
 			print_result = "<b>Push</b>";
@@ -952,7 +941,7 @@ int BlackJack::resolve_winner(int player_value, int house_value, double bet,
 		wins++;
 		print_result = "<font color=\"blue\"><b>Win</b></font>";
 		return 1;
-	} else if (house_value > player_value) {
+	} else if (house_value > P_value) {
 		if (bjwinall == 0 && !first_hand && house_status == "BJ") {
 			ties++;
 			print_result = "<b>Push</b>";
@@ -964,12 +953,12 @@ int BlackJack::resolve_winner(int player_value, int house_value, double bet,
 			print_result = "<font color=\"red\"><b>Loss</b></font>";
 			return -1;
 		}
-	} else if (house_value < player_value) {
+	} else if (house_value < P_value) {
 		score += bet;
 		wins++;
 		print_result = "<font color=\"blue\"><b>Win</b></font>";
 		return 1;
-	} else if (house_status == "BJ" && BJ == false && player_value < 21) {
+	} else if (house_status == "BJ" && BJ == false && P_value < 21) {
 		if (bjwinall == 0 && !first_hand && house_status == "BJ") {
 			ties++;
 			print_result = "<b>Push</b>";
@@ -981,7 +970,7 @@ int BlackJack::resolve_winner(int player_value, int house_value, double bet,
 			print_result = "<font color=\"red\"><b>Loss</b></font>";
 			return -1;
 		}
-	} else if (house_status == "BJ" && BJ == false && player_value == 21) {
+	} else if (house_status == "BJ" && BJ == false && P_value == 21) {
 		// player 21, house BJ
 		if (push21 == 0) { // lose
 			if (bjwinall == 0 && !first_hand && house_status == "BJ") {
@@ -1006,7 +995,7 @@ int BlackJack::resolve_winner(int player_value, int house_value, double bet,
 		wins++;
 		print_result = "<font color=\"blue\"><b>Win</b></font>";
 		return 1;
-	} else if (house_value == player_value) {
+	} else if (house_value == P_value) {
 		ties++;
 		print_result = "<b>Push</b>";
 		return 0;

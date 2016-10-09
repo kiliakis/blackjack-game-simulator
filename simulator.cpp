@@ -13,8 +13,8 @@ int main(int argc, char **argv) {
 
 	int interval = bj->calc_interval();
 
-	// long int total_shoes_won, total_shoes_lost, total_shoes_tied,
-	long int shoe_wins, shoe_loses, shoe_ties, i;
+	// int total_shoes_won, total_shoes_lost, total_shoes_tied,
+	int shoe_wins, shoe_loses, shoe_ties, i;
 
 	// total_shoes_won = total_shoes_lost = total_shoes_tied = 0;
 	shoe_wins = shoe_loses = shoe_ties = i = 0;
@@ -128,6 +128,7 @@ int main(int argc, char **argv) {
 
 
 			} // end of box
+			// bj->player_busts += bj->busts;
 
 			int certain_hands = bj->busts + bj->surr
 			                    + (bj->win777 == 1 ? bj->triple7 : 0);
