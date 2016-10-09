@@ -1,5 +1,5 @@
 CXX = g++
-CFLAGS=-std=c++11 -O3 -Wall
+CFLAGS=-std=c++11 -O0 -g -Wextra
 LDFLAGS=
 SOURCES=simulator.cpp blackjack.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
@@ -15,4 +15,4 @@ $(EXECUTABLE): $(SOURCES)
 
 
 clean:
-	rm *~ simulator
+	rm simulator

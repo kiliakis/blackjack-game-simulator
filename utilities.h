@@ -18,11 +18,11 @@ using namespace std;
 // remove this function from here, add a library
 // TODO added house_status, player_status[box], player_string[box],
 // player_value[box], wager, com_rate, bet[box]
-static inline void html_print(BlackJack *bj, long int i, long int box,
-                int player_value, string player_status, string player_string,
-                int house_value, string house_status, string house_string,
-                int &bet, string *P_status, string *P_string,
-                int *P_value, vector<bool> &v)
+static inline void html_print(BlackJack *bj, int i, int box,
+                              int P_value[4], string P_string[4],
+                              string P_status[4], int house_value,
+                              string house_string, string house_status,
+                              int bet, bool BJ, vector<bool> v)
 {
 	stringstream s, s2, s3;
 	int res;
@@ -38,42 +38,42 @@ static inline void html_print(BlackJack *bj, long int i, long int box,
 		s << "<font color=\"green\"><b>BJ</b></font>";
 	}
 
-	if (player_status != "Split") {
+	if (P_status[0] != "Split") {
 
-		res = bj->resolve_winner(player_value, house_value, bet, box,
+		res = bj->resolve_winner(P_value[0], house_value, bet, box,
 		                         bj->score, bj->hands, bj->loses, bj->wins,
-		                         bj->ties, player_status, player_string,
-		                         house_status, first_hand, print_result);
+		                         bj->ties, P_status[0], P_string[0],
+		                         house_status, first_hand, print_result, BJ);
 		first_hand = false;
 		v.push_back(res > 0);
 
-		if (player_status == "Double") {
-			bj->resolve_winner(player_value, house_value, bet, box,
+		if (P_status[0] == "Double") {
+			bj->resolve_winner(P_value[0], house_value, bet, box,
 			                   bj->dscore, bj->dhands, bj->dloses, bj->dwins,
-			                   bj->dties, player_status, player_string,
-			                   house_status, first_hand, print_result);
+			                   bj->dties, P_status[0], P_string[0],
+			                   house_status, first_hand, print_result, BJ);
 		}
 		// if you lose original bet, house has BJ, you doubled down but lost
 		// you have not splitted hands, you take half your bet back
 
 		if (bj->bjwinall == 0 && house_status == "BJ"
-		        && res < 0 && player_status == "Double") {
+		        && res < 0 && P_status[0] == "Double") {
 			//score += wager;
 			bj->score += bj->wager * (1 - 0.01 * bj->com_rate);
 		}
 
-		if (player_string == "777") {
-			player_string = "<b>777</b>";
+		if (P_string[0] == "777") {
+			P_string[0] = "<b>777</b>";
 		}
 		if (bj->detailed_out) {
 			bj->html << "<tr> <td>" << s3.str() << "</td> <td>" << s2.str()
 			         << "</td> <td>" << s.str() << "</td> <td>" << box + 1
-			         << "</td> <td>" << player_string << "</td> <td>"
-			         << player_value << "</td> <td>" << fixed << bj->score
-			         << "</td> <td>" << player_status << "</td> <td>"
+			         << "</td> <td>" << P_string[0] << "</td> <td>"
+			         << P_value[0] << "</td> <td>" << fixed << bj->score
+			         << "</td> <td>" << P_status[0] << "</td> <td>"
 			         << print_result << "</td></tr>\n";
 		}
-	} else if (player_status == "Split") {
+	} else if (P_status[0] == "Split") {
 		// print 1st split hand
 		int j = 0;
 		while (j < bj->num_splits && P_value[j] > 0) {
@@ -82,7 +82,7 @@ static inline void html_print(BlackJack *bj, long int i, long int box,
 				bj->resolve_winner(P_value[j], house_value, bet, box,
 				                   bj->dscore, bj->dhands, bj->dloses, bj->dwins,
 				                   bj->dties, P_status[j], P_string[j],
-				                   house_status, false, print_result);
+				                   house_status, false, print_result, BJ);
 			} else {
 				bet = bj->wager;
 			}
@@ -90,7 +90,7 @@ static inline void html_print(BlackJack *bj, long int i, long int box,
 			res = bj->resolve_winner(P_value[j], house_value, bet, box,
 			                         bj->score, bj->hands, bj->loses, bj->wins,
 			                         bj->ties, P_status[j], P_string[j],
-			                         house_status, first_hand, print_result);
+			                         house_status, first_hand, print_result, BJ);
 
 			bj->v.push_back(res > 0);
 			// if you lose only original bet, house has BJ, you lost the round,
@@ -105,7 +105,7 @@ static inline void html_print(BlackJack *bj, long int i, long int box,
 			bj->resolve_winner(P_value[j], house_value, bet, box, bj->sscore,
 			                   bj->shands, bj->sloses, bj->swins, bj->sties,
 			                   P_status[j], P_string[j], house_status,
-			                   first_hand, print_result);
+			                   first_hand, print_result, BJ);
 			first_hand = false;
 			if (bj->detailed_out) {
 				if (j == 0) {
@@ -139,9 +139,10 @@ static inline void generate_WLstreak(ofstream &WL_streak, ofstream &WLdata, vect
 	vector<int> streak_v;
 	int streak = 1;
 	int max = 1;
-	bool res = v.at(0);
+	if (v.empty()) return;
+	bool res = v[0];
 	for (unsigned int i = 1; i < v.size(); i++) {
-		if (res == v.at(i)) {
+		if (res == v[i]) {
 			streak++;
 		} else {
 			res = !res;
@@ -288,7 +289,8 @@ static inline void html_files_init(BlackJack *bj) {
 }
 
 
-static inline void html_files_close(BlackJack *bj, long double highest_win, long double highest_lose)
+static inline void html_files_close(BlackJack *bj, long double highest_win,
+                                    long double highest_lose)
 {
 	bj->trip_html << "<tr><td>Total</td><td>" << bj->wins << "</td><td>" << bj->ties
 	              << "</td><td>" << bj->loses << "</td><td>" << fixed << highest_win
@@ -359,7 +361,7 @@ static inline void html_files_close(BlackJack *bj, long double highest_win, long
 }
 
 
-static inline void parse_args(BlackJack &bj, int argc, char **argv)
+static inline void parse_args(BlackJack *bj, int argc, char **argv)
 {
 	int c;
 	extern char *optarg;
@@ -407,8 +409,8 @@ static inline void parse_args(BlackJack &bj, int argc, char **argv)
 				exit(1);
 				break;
 			case 1:
-				bj.shuffle = atoi(optarg);
-				if (!(bj.shuffle == 0 || bj.shuffle == 1))
+				bj->shuffle = atoi(optarg);
+				if (!(bj->shuffle == 0 || bj->shuffle == 1))
 				{
 					printf("shuffle argument must be 0 or 1\n");
 					printf( USAGE, argv[0]);
@@ -416,8 +418,8 @@ static inline void parse_args(BlackJack &bj, int argc, char **argv)
 				}
 				break;
 			case 2:
-				bj.num_splits = atoi(optarg);
-				if (!(bj.num_splits == 3 || bj.num_splits == 4))
+				bj->num_splits = atoi(optarg);
+				if (!(bj->num_splits == 3 || bj->num_splits == 4))
 				{
 					printf("splits argument must be 3 or 4\n");
 					printf( USAGE, argv[0]);
@@ -425,8 +427,8 @@ static inline void parse_args(BlackJack &bj, int argc, char **argv)
 				}
 				break;
 			case 3:
-				bj.resplitA = atoi(optarg);
-				if (!(bj.resplitA == 0 || bj.resplitA == 1))
+				bj->resplitA = atoi(optarg);
+				if (!(bj->resplitA == 0 || bj->resplitA == 1))
 				{
 					printf("resplitA argument must be 0 or 1\n");
 					printf( USAGE, argv[0]);
@@ -434,8 +436,8 @@ static inline void parse_args(BlackJack &bj, int argc, char **argv)
 				}
 				break;
 			case 4:
-				bj.soft17 = atoi(optarg);
-				if (!(bj.soft17 == 0 || bj.soft17 == 1))
+				bj->soft17 = atoi(optarg);
+				if (!(bj->soft17 == 0 || bj->soft17 == 1))
 				{
 					printf("soft17 argument must be 0 or 1\n");
 					printf( USAGE, argv[0]);
@@ -443,8 +445,8 @@ static inline void parse_args(BlackJack &bj, int argc, char **argv)
 				}
 				break;
 			case 5:
-				bj.push21 = atoi(optarg);
-				if (!(bj.push21 == 0 || bj.push21 == 1))
+				bj->push21 = atoi(optarg);
+				if (!(bj->push21 == 0 || bj->push21 == 1))
 				{
 					printf("push21 argument must be 0 or 1\n");
 					printf( USAGE, argv[0]);
@@ -452,8 +454,8 @@ static inline void parse_args(BlackJack &bj, int argc, char **argv)
 				}
 				break;
 			case 6:
-				bj.win777 = atoi(optarg);
-				if (!(bj.win777 == 0 || bj.win777 == 1))
+				bj->win777 = atoi(optarg);
+				if (!(bj->win777 == 0 || bj->win777 == 1))
 				{
 					printf("win777 argument must be 0 or 1\n");
 					printf( USAGE, argv[0]);
@@ -461,8 +463,8 @@ static inline void parse_args(BlackJack &bj, int argc, char **argv)
 				}
 				break;
 			case 7:
-				bj.surrender = atoi(optarg);
-				if (!(bj.surrender == 0 || bj.surrender == 1))
+				bj->surrender = atoi(optarg);
+				if (!(bj->surrender == 0 || bj->surrender == 1))
 				{
 					printf("surrender argument must be 0 or 1\n");
 					printf( USAGE, argv[0]);
@@ -470,8 +472,8 @@ static inline void parse_args(BlackJack &bj, int argc, char **argv)
 				}
 				break;
 			case 8:
-				bj.double_any = atoi(optarg);
-				if (!(bj.double_any == 0 || bj.double_any == 1))
+				bj->double_any = atoi(optarg);
+				if (!(bj->double_any == 0 || bj->double_any == 1))
 				{
 					printf("double_any argument must be 0 or 1\n");
 					printf( USAGE, argv[0]);
@@ -479,8 +481,8 @@ static inline void parse_args(BlackJack &bj, int argc, char **argv)
 				}
 				break;
 			case 9:
-				bj.bjwinall = atoi(optarg);
-				if (!(bj.bjwinall == 0 || bj.bjwinall == 1))
+				bj->bjwinall = atoi(optarg);
+				if (!(bj->bjwinall == 0 || bj->bjwinall == 1))
 				{
 					printf("bjwinall argument must be 0 or 1\n");
 					printf( USAGE, argv[0]);
@@ -502,24 +504,24 @@ static inline void parse_args(BlackJack &bj, int argc, char **argv)
 	    exit(1);
 	}
 	*/
-	printf("Shuffle method (0-> random shuffle, 1-> manual shoe)\t\t\t= %d\n", bj.shuffle);
-	printf("Number of split hands\t\t\t\t\t\t\t= %d\n", bj.num_splits);
-	printf("Can resplit Aces (1-yes, 0-no)\t\t\t\t\t\t= %d\n", bj.resplitA);
-	printf("House soft 17 hit or stand? (0->hit, 1->stand)\t\t\t\t= %d\n", bj.soft17);
-	printf("Player's 21 push or lose to house BJ? (0-> lose, 1-> push)\t\t= %d\n", bj.push21);
-	printf("Player's 777 win double or wait for house card? (0-> wait, 1-> win)\t= %d\n", bj.win777);
-	printf("Can Player surrender? (0-> no, 1-> yes)\t\t\t\t\t= %d\n", bj.surrender);
-	printf("Double down on 9,10,11 or any 2 cards? (0-> 9,10,11, 1-> any)\t\t= %d\n", bj.double_any);
-	printf("House BJ win all bets or original bet only? (0-> original, 1-> all)\t= %d\n", bj.bjwinall);
+	printf("Shuffle method (0-> random shuffle, 1-> manual shoe)\t\t\t= %d\n", bj->shuffle);
+	printf("Number of split hands\t\t\t\t\t\t\t= %d\n", bj->num_splits);
+	printf("Can resplit Aces (1-yes, 0-no)\t\t\t\t\t\t= %d\n", bj->resplitA);
+	printf("House soft 17 hit or stand? (0->hit, 1->stand)\t\t\t\t= %d\n", bj->soft17);
+	printf("Player's 21 push or lose to house BJ? (0-> lose, 1-> push)\t\t= %d\n", bj->push21);
+	printf("Player's 777 win double or wait for house card? (0-> wait, 1-> win)\t= %d\n", bj->win777);
+	printf("Can Player surrender? (0-> no, 1-> yes)\t\t\t\t\t= %d\n", bj->surrender);
+	printf("Double down on 9,10,11 or any 2 cards? (0-> 9,10,11, 1-> any)\t\t= %d\n", bj->double_any);
+	printf("House BJ win all bets or original bet only? (0-> original, 1-> all)\t= %d\n", bj->bjwinall);
 
 
 	// 6 decks for random shuffle machine
-	if (bj.shuffle == 0)
+	if (bj->shuffle == 0)
 	{
-		bj.num_decks = 6;
+		bj->num_decks = 6;
 	}
 
-	bj.total_cards = bj.num_decks * 52;
+	bj->total_cards = bj->num_decks * 52;
 }
 
 

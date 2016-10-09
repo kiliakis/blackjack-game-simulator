@@ -137,76 +137,80 @@ public:
 // 	bool player_bust[10], BJ[10];
 
 
-// 	long int box,
-// 	     player_busts = 0, triple7_wins = 0,
-// 	     shoes, trips, total_i = 0;
-
 // 	double bet[10];
 
-// 	string 	char_P_1st_card, char_P_2nd_card, char_P_next_card,
-// 	        char_H_1st_card,
-// 	        char_card01, char_card02, char_next_card, player_status[10],
-// 	        player_split_status, house_status,
-// 	        player_string[10], player_split_string,
-// 	        house_string,
-// 	        P_cards_char[2][10], P_status[10][4], P_string[10][4];
 
 // 	char card_array[13];
 
 	BlackJack(int argc, char *argv[]);
 	~BlackJack() {};
-	void end_of_trip(double &highest_win, double &highest_lose);
-	void start_of_trip();
+	void end_of_trip(double &highest_win, double &highest_lose, int trip);
+	void start_of_trip(int trips);
 	void end_of_shoe(int &shoes, long &shoe_wins,
 	                 long &shoe_loses, long &shoe_ties,
-	                 double &shoe_score);
-	void end_of_hand(int i, int interval, double prev_score);
+	                 double &shoe_score, long i);
+
+	void end_of_hand(int i, int interval, double prev_score,
+	                 int player_value[10][4], string player_status[10][4],
+	                 string player_string[10][4], int house_value,
+	                 string house_string, string house_status,
+	                 int *bet, bool *BJ);
 	int calc_interval();
 	void burn_card();
 	void player_play_hand(int P_1st_card, int P_2nd_card, int H_1st_card,
 	                      string player_string[4], int player_value[4],
-	                      string player_status[4], int &bet);
+	                      string player_status[4], int &bet, bool &BJ);
 // Functions declaration
-	void html_files_init();
+	// void html_files_init();
 	void generate_WLstreak();
 	void html_files_close(long double hw, long double hl,
 	                      long int tsw, long int tst,
 	                      long int tsl);
 
 	void stand(int P_1st_card, int P_2nd_card, int &player_value);
+
 	void hit(int P_1st_card, int P_2nd_card,
 	         int H_1st_card, int &player_value,
 	         string &player_string);
+
 	void Double(int P_1st_card, int P_2nd_card,
 	            int &player_value, string &player_string);
-	void bj(bool *BJ, string &player_status);
-	void split(int P_1st_card, int P_2nd_card, string & char_P_1st_card,
-	           string & char_P_2nd_card, int num_splits,
-	           int *P_value, string *P_string, string *P_status);
+
+	void bj(bool &BJ, string &player_status);
+
+	void split(int P_1st_card, int P_2nd_card,
+	           string char_P_1st_card, string char_P_2nd_card,
+	           int P_value[4], string P_string[4], string P_status[4],
+	           int H_1st_card);
+
 	void surrender_f();
 	void draw_card(int &a, string &b);
 	int resolve_winner(int player_value, int house_value, double bet,
-	                   long int box, double & score,
+	                   int box, double & score,
 	                   long int & hand, long int & loses,
 	                   long int & wins, long int & ties,
 	                   string player_status, string player_string,
 	                   string house_status, bool first_hand,
 	                   string &print_result, bool BJ);
-	void html_print(long int, long int, ofstream &);
-	char stringconversion(int);
+
+	string stringconversion(int);
 	int numericconversion(int);
-	string check_player_1st_2_cards(int & A, int & B,
-	                                int & C, int & D);
-	int player_hit(int & P_1st_card, int & P_2nd_card,
-	               int & H_1st_card, int & player_value,
-	               int & P_next_card, string & player_string);
-	int house_hit(int & house_value, string & house_status,
+	string check_player_1st_2_cards(int P_1st_card,
+	                                int P_2nd_card,
+	                                int H_1st_card,
+	                                int & player_value);
+	int player_hit(int P_1st_card, int P_2nd_card,
+	               int H_1st_card, int & player_value,
+	               string & player_string);
+	int house_hit(int H_1st_card, int & house_value,
+	              string & house_status,
 	              string & house_string);
 	int player_split(int card01, int card02,
 	                 string char_card01,
 	                 string char_card02,
 	                 string & player_split_string,
-	                 string & player_split_status);
+	                 string & player_split_status,
+	                 int H_1st_card);
 
 };
 
