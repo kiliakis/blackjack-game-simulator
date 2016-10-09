@@ -56,9 +56,9 @@ using namespace std;
 
 
 // uncomment next line for fixed player's first two cards
- #define P_FIXED_CARDS
+ // #define P_FIXED_CARDS
 // uncomment next line for fixed house first card
- #define H_FIXED_CARDS
+ // #define H_FIXED_CARDS
 // uncomment next line for a random slit game
 // #define RANDOM_SPLIT
 // note that random split does not work with if
