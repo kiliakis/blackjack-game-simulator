@@ -33,7 +33,7 @@ static inline void html_print(BlackJack *bj, int i, int box,
 		s << "<font color=\"green\"><b>BJ</b></font>";
 	}
 
-	if (P_status[0] != "Split") {
+	if (P_status[0].find("Split") == string::npos) {
 
 		res = bj->resolve_winner(P_value[0], house_value, bet, box,
 		                         bj->score, bj->hands, bj->loses, bj->wins,
@@ -68,7 +68,7 @@ static inline void html_print(BlackJack *bj, int i, int box,
 			         << "</td> <td>" << P_status[0] << "</td> <td>"
 			         << print_result << "</td></tr>\n";
 		}
-	} else if (P_status[0] == "Split") {
+	} else if (P_status[0].find("Split") != string::npos) {
 		// print 1st split hand
 		int j = 0;
 		while (j < bj->num_splits && P_value[j] > 0) {

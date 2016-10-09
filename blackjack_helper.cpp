@@ -28,6 +28,7 @@ void BlackJack::start_of_trip(int trips) {
 	trip_score = trip_high_win = trip_high_lose = 0.0;
 	used_cards = 0;
 	random_shuffle(shoe.begin(), shoe.end());
+	
 	int burn_card_num; string burn_card_char;
 	draw_card(burn_card_num, burn_card_char);
 

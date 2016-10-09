@@ -7,13 +7,17 @@ using namespace std;
 
 
 void BlackJack::player_play_hand(int P_1st_card, int P_2nd_card,
-                                 int H_1st_card, string P_string[4],
+                                 string char_P_1st_card,
+                                 string char_P_2nd_card,
+                                 int H_1st_card,
+                                 string char_H_1st_card,
+                                 string P_string[4],
                                  int P_value[4], string P_status[4],
                                  int &bet, bool& BJ)
 {
-	string char_P_1st_card = stringconversion(P_1st_card);
-	string char_P_2nd_card = stringconversion(P_2nd_card);
-	string char_H_1st_card = stringconversion(H_1st_card);
+	// string char_P_1st_card = stringconversion(P_1st_card);
+	// string char_P_2nd_card = stringconversion(P_2nd_card);
+	// string char_H_1st_card = stringconversion(H_1st_card);
 	P_string[0] = char_P_1st_card + char_P_2nd_card;
 	string house_string = char_H_1st_card;
 	P_value[0] = P_1st_card + P_2nd_card;
@@ -27,8 +31,9 @@ void BlackJack::player_play_hand(int P_1st_card, int P_2nd_card,
 	}
 
 	if (P_status[0] == "Hit") {
-		hit(P_1st_card, P_2nd_card, H_1st_card,
-		    P_value[0], P_string[0]);
+		hit(P_1st_card, P_2nd_card,
+		    char_P_1st_card, char_P_2nd_card,
+		    H_1st_card, P_value[0], P_string[0]);
 		bet = wager;
 	}
 
@@ -355,11 +360,13 @@ string BlackJack::check_player_1st_2_cards(int P_1st_card, int P_2nd_card,
 }
 
 
-int BlackJack::player_hit(int P_1st_card, int P_2nd_card, int H_1st_card,
+int BlackJack::player_hit(int P_1st_card, int P_2nd_card,
+                          string char_P_1st_card, string char_P_2nd_card,
+                          int H_1st_card,
                           int & P_value, string & P_string)
 {
 	int p = 0;
-	P_string = stringconversion(P_1st_card) + stringconversion(P_2nd_card);
+	P_string = char_P_1st_card + char_P_2nd_card;
 
 	string player_A_exist = "No";
 	string player_value_status = "";
@@ -508,19 +515,20 @@ house_next_card_loop:
 }
 
 
-int BlackJack::player_split(int card01, int card02,
+void BlackJack::player_split(int card01, int card02,
                             string char_card01,
                             string char_card02,
+                            int & player_split_value,
                             string & player_split_string,
                             string & player_split_status,
                             int H_1st_card)
 {
-	int player_split_value = card01 + card02;
+	player_split_value = card01 + card02;
 	player_split_string = char_card01 + char_card02;
 	if (card01 == 1) {
 		player_split_status = "Split/Stand";
 		player_split_value = player_split_value + 10;
-		return player_split_value;
+		return;
 	}
 
 	split_on = false;
@@ -530,7 +538,9 @@ int BlackJack::player_split(int card01, int card02,
 
 	if (player_split_status == "Hit") {
 		player_split_status = "Split/Hit";
-		player_split_value = player_hit(card01, card02, H_1st_card,
+		player_split_value = player_hit(card01, card02,
+		                                char_card01, char_card02,
+		                                H_1st_card,
 		                                player_split_value,
 		                                player_split_string);
 
@@ -554,7 +564,7 @@ int BlackJack::player_split(int card01, int card02,
 		}
 		player_split_string = player_split_string + char_next_card;
 	}
-	return player_split_value;
+	// return;
 }
 
 
@@ -567,12 +577,15 @@ void BlackJack::stand(int P_1st_card, int P_2nd_card, int &P_value) {
 
 
 void BlackJack::hit(int P_1st_card, int P_2nd_card,
+                    string char_P_1st_card, string char_P_2nd_card,
                     int H_1st_card, int &P_value,
                     string &P_string)
 {
 
-	P_value = player_hit(P_1st_card, P_2nd_card, H_1st_card,
-	                     P_value, P_string);
+	P_value = player_hit(P_1st_card, P_2nd_card,
+	                     char_P_1st_card,
+	                     char_P_2nd_card,
+	                     H_1st_card, P_value, P_string);
 
 	busts += P_value > 21;
 
@@ -648,8 +661,10 @@ void BlackJack::split(int P_1st_card, int P_2nd_card,
 		//do something for bj after ace split
 		player_split(P_split_cards[i], P_split_cards[i + 1],
 		             P_chars[i], P_chars[i + 1],
+		             P_value[i / 2],
 		             P_string[i / 2],
-		             P_status[i / 2], H_1st_card);
+		             P_status[i / 2],
+		             H_1st_card);
 	}
 	for (int i = split_hands; i < num_splits; ++i) P_value[i] = 0;
 

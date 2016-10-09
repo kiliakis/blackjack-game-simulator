@@ -34,7 +34,7 @@ const int GENERATE_GRAPHS = 1;
 // Shuffle method (0-> random shuffle, 1-> manual shoe)
 const int SHUFFLE = 1;
 // Split to 3 or 4 hands
-const int NUM_SPLITS = 4;
+const int NUM_SPLITS = 3;
 // Can resplit Aces? (0-> no, 1-> yes)
 const int RESPLITA = 1;
 // House soft 17 hit or stand? (0-> hit, 1-> stand)
@@ -56,7 +56,7 @@ const int BJWINALL = 1;
 // uncomment next line for fixed house first card
 // #define H_FIXED_CARDS
 // uncomment next line for a random slit game
-// #define RANDOM_SPLIT
+#define RANDOM_SPLIT
 // note that random split does not work with if
 // P_FIXED_CARDS is defined
 
@@ -136,9 +136,14 @@ public:
 	                 int *bet, bool *BJ);
 	int calc_interval();
 	void burn_card();
-	void player_play_hand(int P_1st_card, int P_2nd_card, int H_1st_card,
-	                      string P_string[4], int P_value[4],
-	                      string P_status[4], int &bet, bool &BJ);
+	void player_play_hand(int P_1st_card, int P_2nd_card,
+	                      string char_P_1st_card,
+	                      string char_P_2nd_card,
+	                      int H_1st_card,
+	                      string char_H_1st_card,
+	                      string P_string[4],
+	                      int P_value[4], string P_status[4],
+	                      int &bet, bool& BJ);
 
 	void generate_WLstreak();
 
@@ -149,6 +154,7 @@ public:
 	void stand(int P_1st_card, int P_2nd_card, int &P_value);
 
 	void hit(int P_1st_card, int P_2nd_card,
+	         string char_P_1st_card, string char_P_2nd_card,
 	         int H_1st_card, int &P_value,
 	         string &P_string);
 
@@ -180,6 +186,7 @@ public:
 	                                int H_1st_card, int & P_value);
 
 	int player_hit(int P_1st_card, int P_2nd_card,
+	               string char_P_1st_card, string char_P_2nd_card,
 	               int H_1st_card, int & P_value,
 	               string & P_string);
 
@@ -187,9 +194,10 @@ public:
 	              string & house_status,
 	              string & house_string);
 
-	int player_split(int card01, int card02,
+	void player_split(int card01, int card02,
 	                 string char_card01,
 	                 string char_card02,
+	                 int & player_split_value,
 	                 string & player_split_string,
 	                 string & player_split_status,
 	                 int H_1st_card);

@@ -113,7 +113,9 @@ int main(int argc, char **argv) {
 				bj->BJ_on = true;
 				bj->split_on = true;
 
-				bj->player_play_hand(P_1st_card, P_2nd_card, H_1st_card,
+				bj->player_play_hand(P_1st_card, P_2nd_card,
+				                     char_P_1st_card, char_P_2nd_card,
+				                     H_1st_card, char_H_1st_card,
 				                     P_string[box], P_value[box],
 				                     P_status[box], bet[box], BJ[box]);
 
