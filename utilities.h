@@ -12,14 +12,12 @@
 
 using namespace std;
 
-// remove this function from here, add a library
-// TODO added house_status, player_status[box], player_string[box],
-// player_value[box], wager, com_rate, bet[box]
+
 static inline void html_print(BlackJack *bj, int i, int box,
                               int P_value[4], string P_string[4],
                               string P_status[4], int house_value,
                               string house_string, string house_status,
-                              int bet, bool BJ, vector<bool> v)
+                              int bet, bool BJ, vector<bool> &v)
 {
 	stringstream s, s2, s3;
 	int res;
@@ -352,7 +350,7 @@ static inline void html_files_close(BlackJack *bj, long double highest_win,
 	bj->overall_stats << "</body></html>\n";
 	bj->overall_stats.close();
 	if (bj->generate_graphs) {
-		generate_WLstreak(bj->WLdata, bj->WL_streak, bj->v);
+		generate_WLstreak(bj->WL_streak, bj->WLdata, bj->v);
 	}
 
 }

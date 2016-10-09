@@ -1,7 +1,7 @@
 CXX = g++
 CFLAGS=-std=c++11 -O0 -g -Wextra
 LDFLAGS=
-SOURCES=simulator.cpp blackjack.cpp
+SOURCES=simulator.cpp blackjack_helper.cpp blackjack_strategy.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=simulator
 
