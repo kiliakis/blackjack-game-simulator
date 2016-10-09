@@ -28,7 +28,7 @@ using namespace std;
 #define ROUNDS 1000
 // number of shoes in a trip
 // only applicable when manual shoe is used
-#define SHOES 2
+#define SHOES 10
 // number of trips in a simulation
 #define TRIPS 10
 // Detailed output or not?
@@ -38,7 +38,7 @@ using namespace std;
 // Shuffle method (0-> random shuffle, 1-> manual shoe)
 #define SHUFFLE 1
 // Split to 3 or 4 hands
-#define NUM_SPLITS 4
+#define NUM_SPLITS 3
 // Can resplit Aces? (0-> no, 1-> yes)
 #define RESPLITA 1
 // House soft 17 hit or stand? (0-> hit, 1-> stand)
