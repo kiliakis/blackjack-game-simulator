@@ -24,7 +24,7 @@ const int COM_RATE = 1;
 const int ROUNDS = 1000;
 // number of shoes in a trip
 // only applicable when manual shoe is used
-const int SHOES = 2;
+const int SHOES = 10;
 // number of trips in a simulation
 const int TRIPS = 10;
 // Detailed output or not?
@@ -56,7 +56,7 @@ const int BJWINALL = 1;
 // uncomment next line for fixed house first card
 // #define H_FIXED_CARDS
 // uncomment next line for a random slit game
-#define RANDOM_SPLIT
+// #define RANDOM_SPLIT
 // note that random split does not work with if
 // P_FIXED_CARDS is defined
 
