@@ -10,17 +10,10 @@ int main(int argc, char **argv) {
 	//***uncomment this for a different random game
 	//srand (time(NULL));
 	auto bj = new BlackJack(argc, argv);
-
 	int interval = bj->calc_interval();
-
-	// int total_shoes_won, total_shoes_lost, total_shoes_tied,
-	int shoe_wins, shoe_loses, shoe_ties, i;
-
-	// total_shoes_won = total_shoes_lost = total_shoes_tied = 0;
-	shoe_wins = shoe_loses = shoe_ties = i = 0;
+	int shoe_wins = 0, shoe_loses = 0, shoe_ties = 0, i = 0;
 	double highest_lose = 0, highest_win = 0;
-	double shoe_score, prev_score;//, highest_win, highest_lose;
-	shoe_score = prev_score = 0;// = highest_win = highest_lose = 0;
+	double shoe_score = 0, prev_score = 0;
 
 	for (int trips = 1; trips <= bj->num_trips; trips++) { //start of trip
 		prev_score = bj->score;
@@ -117,8 +110,6 @@ int main(int argc, char **argv) {
 				// NOTE made player_* int instead of array
 				P_string[box][0] = char_P_1st_card + char_P_2nd_card;
 
-				// int player_value = P_1st_card + P_2nd_card;
-				// bool BJ = false;
 				bj->BJ_on = true;
 				bj->split_on = true;
 
@@ -128,7 +119,6 @@ int main(int argc, char **argv) {
 
 
 			} // end of box
-			// bj->player_busts += bj->busts;
 
 			int certain_hands = bj->busts + bj->surr
 			                    + (bj->win777 == 1 ? bj->triple7 : 0);
@@ -148,7 +138,7 @@ int main(int argc, char **argv) {
 
 		bj->end_of_trip(highest_win, highest_lose, trips);
 
-	}		// end of trip
+	} // end of trip
 
 	html_files_close(bj, highest_win, highest_lose);
 
@@ -156,6 +146,3 @@ int main(int argc, char **argv) {
 	cout << "\n";
 	return 0;
 }
-
-
-

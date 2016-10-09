@@ -439,7 +439,7 @@ string BlackJack::check_player_1st_2_cards(int P_1st_card, int P_2nd_card,
 		} else if (H_1st_card == 2 || H_1st_card == 7 || H_1st_card == 8) {
 			status = "Stand";
 			return status;
-		} else if (H_1st_card > 2.5 && H_1st_card < 6.5) {
+		} else if (H_1st_card > 2 && H_1st_card < 7) {
 			if (double_any == 1) {
 				status = "Double";
 			} else {
@@ -591,9 +591,9 @@ int BlackJack::player_hit(int P_1st_card, int P_2nd_card, int H_1st_card,
                           int & P_value, string & P_string)
 {
 	int p = 0;
-	P_string = "";
-	P_string += stringconversion(P_1st_card);
-	P_string += stringconversion(P_2nd_card);
+	// P_string = "";
+	P_string = stringconversion(P_1st_card) + stringconversion(P_2nd_card);
+	// P_string += stringconversion(P_2nd_card);
 
 	string player_A_exist = "No";
 	string player_value_status = "";
@@ -619,15 +619,15 @@ player_next_card_loop:
 
 	if (player_A_exist == "Yes") {
 		if (P_value < 11.5) {
-			player_value_HS = P_value;
+			player_value_HS = P_value + 10;
 			player_value_status = "soft";
 		}
 		if (P_value > 11.5 && P_value < 21.5) {
-			player_value_HS = P_value + 10;
+			player_value_HS = P_value;
 			player_value_status = "hard";
 		}
 		if (P_value > 21.5) {
-			player_value_HS = P_value + 10;
+			player_value_HS = P_value;
 			player_value_status = "hard";
 		}
 	}
