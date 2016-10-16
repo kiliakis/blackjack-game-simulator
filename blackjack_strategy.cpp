@@ -215,7 +215,7 @@ string BlackJack::check_player_1st_2_cards(int P_1st_card, int P_2nd_card,
 			if (double_any == 1) {
 				status = "Double";
 			} else {
-				status = "Hit";
+				status = "Stand";
 			}
 			return status;
 		}

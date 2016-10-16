@@ -75,10 +75,10 @@ int main(int argc, char **argv) {
 // if you have defined P_FIXED_CARDS, here you can set player's 1st and 2nd cards
 #ifdef P_FIXED_CARDS
 			for (int k = 0; k < bj->num_boxes; k++) {
-				P_cards[0][k] = 5;		//player's 1st card
+				P_cards[0][k] = 1;		//player's 1st card
 				P_cards_char[0][k] = bj->stringconversion(P_cards[0][k]);
 				P_cards[0][k] = bj->numericconversion(P_cards[0][k]);
-				P_cards[1][k] = 6;//player's 2nd card
+				P_cards[1][k] = 7;//player's 2nd card
 				P_cards_char[1][k] = bj->stringconversion(P_cards[1][k]);
 				P_cards[1][k] = bj->numericconversion(P_cards[1][k]);
 			}

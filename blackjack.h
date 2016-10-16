@@ -52,7 +52,7 @@ const int BJWINALL = 1;
 
 
 // uncomment next line for fixed player's first two cards
-// #define P_FIXED_CARDS
+#define P_FIXED_CARDS
 // uncomment next line for fixed house first card
 // #define H_FIXED_CARDS
 // uncomment next line for a random slit game
