@@ -21,7 +21,6 @@ static inline void html_print(BlackJack *bj, int i, int box,
 {
 	stringstream s, s2, s3;
 	int res;
-	bool first_hand = true;
 	string print_result;
 	if (box == 0) {
 		s << house_value;
@@ -34,7 +33,7 @@ static inline void html_print(BlackJack *bj, int i, int box,
 	}
 
 	if (P_status[0].find("Split") == string::npos) {
-
+		bool first_hand = true;
 		res = bj->resolve_winner(P_value[0], house_value, bet, box,
 		                         bj->score, bj->hands, bj->loses, bj->wins,
 		                         bj->ties, P_status[0], P_string[0],
@@ -70,6 +69,7 @@ static inline void html_print(BlackJack *bj, int i, int box,
 		}
 	} else if (P_status[0].find("Split") != string::npos) {
 		// print 1st split hand
+		bool first_hand = true;
 		int j = 0;
 		while (j < bj->num_splits && P_value[j] > 0) {
 			if (P_status[j].find("Double") != string::npos) {
@@ -82,6 +82,11 @@ static inline void html_print(BlackJack *bj, int i, int box,
 				bet = bj->wager;
 			}
 
+			bj->resolve_winner(P_value[j], house_value, bet, box, bj->sscore,
+			                   bj->shands, bj->sloses, bj->swins, bj->sties,
+			                   P_status[j], P_string[j], house_status,
+			                   first_hand, print_result, BJ);
+
 			res = bj->resolve_winner(P_value[j], house_value, bet, box,
 			                         bj->score, bj->hands, bj->loses, bj->wins,
 			                         bj->ties, P_status[j], P_string[j],
@@ -91,17 +96,16 @@ static inline void html_print(BlackJack *bj, int i, int box,
 			// if you lose only original bet, house has BJ, you lost the round,
 			// and its not the first Split hand, you take back your money
 
-			if (bj->bjwinall == 0 && house_status == "BJ" && res < 0 && first_hand &&
-			        P_status[j].find("Double") != string::npos ) {
-				//score += wager;
+			if (bj->bjwinall == 0 && house_status == "BJ"
+			        && res < 0 && first_hand
+			        && P_status[j].find("Double") != string::npos) {
 				bj->score += bj->wager * (1 - 0.01 * bj->com_rate);
+				bj->dscore += bj->wager * (1 - 0.01 * bj->com_rate);
 			}
 
-			bj->resolve_winner(P_value[j], house_value, bet, box, bj->sscore,
-			                   bj->shands, bj->sloses, bj->swins, bj->sties,
-			                   P_status[j], P_string[j], house_status,
-			                   first_hand, print_result, BJ);
+
 			first_hand = false;
+
 			if (bj->detailed_out) {
 				if (j == 0) {
 					bj->html << "<tr> <td>" << s3.str() << "</td> <td>" << s2.str()
